@@ -5,7 +5,7 @@
 #include "sender.hpp"
 #include "threadsafequeue.hpp"
 
-#include <set>
+#include <list>
 #include <string>
 #include <atomic>
 #include <thread>
@@ -44,6 +44,11 @@ class Perfectlink {
     /** @brief Thread to receive messages
      */
     void deliverThreaded();
+
+    /** @brief Gets the messages sent by this link
+     * @return the set of messages sent
+     */
+    std::list<std::string> getMessagesSent() const;
     
     private:
 
@@ -54,11 +59,16 @@ class Perfectlink {
 
     std::thread deliver_thread;
     std::thread send_thread;
+
     std::mutex receiver_mutex;
+    std::mutex pop_queue_mutex;
     
     std::atomic<bool> pop_queue;
     ThreadsafeQueue messages_to_send;
-    std::set<std::string> link_delivered; // Only use receiver delivered ?
+    ThreadsafeQueue ack_to_send;
+
+    std::list<std::string> link_delivered; // Only use receiver delivered ?
+    std::list<std::string> link_sent;
 
 };
 

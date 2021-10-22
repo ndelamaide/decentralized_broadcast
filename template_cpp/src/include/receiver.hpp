@@ -3,7 +3,7 @@
 
 #include "udpserver.hpp"
 
-#include <set>
+#include <list>
 #include <string>
 #include <atomic>
 
@@ -42,13 +42,18 @@ class Receiver: public UDPserver {
      */
     void addMessageDelivered(const std::string& msg);
 
+    /** @brief Gets the messages delivered by this receiver (process)
+     * @return the set of messages delivered
+     */
+    std::list<std::string> getMessagesDelivered() const;
+
     private:
 
     int process_id;
     std::atomic<bool> can_receive;
 
     /** @brief Messages delivered by this receiver (process) */
-    std::set<std::string> process_delivered;
+    std::list<std::string> process_delivered;
 
 };
 

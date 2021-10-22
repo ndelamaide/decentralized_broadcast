@@ -3,6 +3,8 @@
 #include <string>
 #include <optional>
 #include <thread>
+#include <algorithm>
+#include <list>
 
 #define MAX_LENGTH 32
 
@@ -46,25 +48,37 @@ void Perfectlink::sendThreaded() {
 
             std::optional<std::string> message_to_send = std::nullopt;
 
-            if (pop_queue){
-                message_to_send = messages_to_send.pop();
-                
-                if (message_to_send){
-                    std::cout << "message to send poped " << *message_to_send << std::endl;
-                    pop_queue = false;
-                }
-            }
+            // Always send ack first
+            message_to_send = ack_to_send.pop();
 
             if (this->sender != nullptr) {
 
                 if (message_to_send) {
+                    
                     this->sender->setMessageToSend(*message_to_send);
-                }
+                    this->sender->send();
 
-                this->sender->send();
+                } else if (pop_queue) {
+
+                    message_to_send = messages_to_send.pop();
+                    
+                    if (message_to_send){
+
+                        link_sent.push_back(message_to_send->substr(1, message_to_send->size()));
+
+                        this->sender->setMessageToSend(*message_to_send);
+                        this->sender->send();
+
+                        std::lock_guard<std::mutex> lock(pop_queue_mutex);
+                        pop_queue = false;
+                    }
+
+                } else {
+                    this->sender->send();
+                }
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(15));
         }
     }
 }
@@ -80,32 +94,50 @@ void Perfectlink::deliverThreaded() {
                 
                 std::string message_received(buffer);
 
-                
                 std::string ack = message_received.substr(0, 1);
                 int message_id = stoi(message_received.substr(1, 3));
                 std::string payload = message_received.substr(4, message_received.size());
                 std::string message_to_deliver = message_received.substr(1,  message_received.size());
 
                 // Only deliver messages from the target of this link
-                if (this->sender->getTargetId() == message_id) {
+                if ((this->sender->getTargetId() == message_id) & (ack == "0")) {
 
-                    if (ack == "0") {
-                        if (link_delivered.find(message_to_deliver) == link_delivered.end()) {
+                    std::list<std::string>::iterator it;
 
-                            link_delivered.insert(message_to_deliver);
-                            //pop_queue = true; // NOT THE SAME PERFECT LINK SENDING AND DELIVERING !!
-                            
-                            std::cout << "link delivered " << message_to_deliver << std::endl;
+                    if (std::find(link_delivered.begin(), link_delivered.end(), message_to_deliver) == link_delivered.end()) {
 
-                            std::lock_guard<std::mutex> lock(receiver_mutex);
-                            this->receiver->addMessageDelivered(message_to_deliver);
-                        }
+                        link_delivered.push_back(message_to_deliver);
+
+                        std::lock_guard<std::mutex> lock(receiver_mutex);
+                        this->receiver->addMessageDelivered(message_to_deliver);
+                    }
+
+                    //send an ack as long as we receive the same message
+                    message_received[0] = '1';
+
+                    ack_to_send.push(message_received);
+                
+                // Received an ack from target process
+                } else if ((this->receiver->getProcessId() == message_id) & (ack == "1")) {
+                    
+                    // Received an ack for last message in queue -> can stop sending
+                    if (messages_to_send.size() == 0) {
+
+                        this->sender->setMessageToSend("");
+
+                    } else {
+                        std::lock_guard<std::mutex> lock(pop_queue_mutex);
+                        pop_queue = true;
                     }
                 }
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
     }
+}
+
+std::list<std::string> Perfectlink::getMessagesSent() const {
+    return link_sent;
 }
 

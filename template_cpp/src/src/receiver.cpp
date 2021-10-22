@@ -1,5 +1,6 @@
 #include "receiver.hpp"
 
+#include <algorithm>
 
 Receiver::Receiver(in_addr_t ip, unsigned short port, int process_id)
     : UDPserver::UDPserver(ip, port), process_id(process_id), can_receive(true)
@@ -31,9 +32,14 @@ void Receiver::setCanReceive(bool bool_) {
 
 void Receiver::addMessageDelivered(const std::string& msg){
 
-    if (process_delivered.find(msg) == process_delivered.end()) {
-        process_delivered.insert(msg);
+    std::list<std::string>::iterator it;
 
-        std::cout << "process delivered " << msg << std::endl;
+    if (std::find(process_delivered.begin(), process_delivered.end(), msg) == process_delivered.end()) {
+        
+        process_delivered.push_back(msg);
     }
+}
+
+std::list<std::string> Receiver::getMessagesDelivered() const {
+    return process_delivered;
 }

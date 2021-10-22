@@ -7,7 +7,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <cstring>
+#include <string>
 #include <sstream>
+#include <list>
 
 #include "parser.hpp"
 #include "hello.h"
@@ -19,7 +21,12 @@
 
 #define MAX_LENGTH 32
 
+
 sockaddr_in createAddress(in_addr_t ip, unsigned short port);
+void stopProcesses();
+void writeOutput();
+
+std::string outputPath;
 
 Receiver* this_process = nullptr;
 std::vector<Sender*> senders;
@@ -38,6 +45,60 @@ sockaddr_in createAddress(in_addr_t ip, unsigned short port) {
   return address;
 }
 
+void stopProcesses() {
+
+  if (this_process != nullptr){
+    this_process->setCanReceive(false);
+  }
+
+  for (auto& link: links) {
+
+    if (link != nullptr) {
+      link->setLinkInactive();
+    }
+  }
+}
+
+void writeOutput() {
+
+  std::stringstream output;
+
+  if (this_process != nullptr){
+
+    std::list<std::string> delivered = this_process->getMessagesDelivered();
+
+    for (auto& message: delivered) {
+
+      int message_id = stoi(message.substr(0, 3));
+      std::string payload = message.substr(3, message.size());
+
+      output << "d " << message_id << " " << payload << std::endl;
+
+    }
+  }
+
+  for (auto& link: links) {
+
+    if (link != nullptr) {
+
+      std::list<std::string> messages_sent = link->getMessagesSent();
+
+      for (auto& message: messages_sent) {
+
+        int message_id = stoi(message.substr(0, 3));
+        std::string payload = message.substr(3, message.size());
+        output << "b " << payload << std::endl;
+      }
+    }
+  }
+
+  std::ofstream file;
+
+  file.open(outputPath);
+  file << output.str(); 
+  file.close();
+}
+
 
 static void stop(int) {
   // reset signal handlers to default
@@ -47,8 +108,12 @@ static void stop(int) {
   // immediately stop network packet processing
   std::cout << "Immediately stopping network packet processing.\n";
 
+  stopProcesses();
+
   // write/flush output file if necessary
   std::cout << "Writing output.\n";
+
+  writeOutput();
 
   // exit directly from signal handler
   exit(0);
@@ -78,6 +143,7 @@ int main(int argc, char **argv) {
   std::cout << "==========================\n";
 
   auto hosts = parser.hosts();
+
   for (auto &host : hosts) {
 
     std::cout << host.id << "\n";
@@ -101,6 +167,7 @@ int main(int argc, char **argv) {
 
   std::cout << "Doing some initialization...\n\n";
 
+  outputPath = parser.outputPath();
   unsigned long my_id = parser.id();
 
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
@@ -152,9 +219,11 @@ int main(int argc, char **argv) {
   std::cout << "Broadcasting and delivering messages...\n\n";
 
   for (auto& link: links) {
+
     if (link != nullptr) {
       link->setLinkActive();
     }
+
   }
 
   // After a process finishes broadcasting,
