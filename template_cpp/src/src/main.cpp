@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
     
     // Don't add a link to itself
     if (host.id != my_id) {
-      sender = new Sender(createAddress(host.ip, host.port));
+      sender = new Sender(createAddress(host.ip, host.port), static_cast<int>(host.id));
       link = new Perfectlink(this_process, sender);
     }
 

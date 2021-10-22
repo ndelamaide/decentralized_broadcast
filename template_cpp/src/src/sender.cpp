@@ -2,8 +2,8 @@
 
 #include <string>
 
-Sender::Sender(sockaddr_in target_addr)
-    : UDPclient::UDPclient(target_addr), msg_to_send(""), can_send(false)
+Sender::Sender(sockaddr_in target_addr, int target_id)
+    : UDPclient::UDPclient(target_addr), target_id(target_id), msg_to_send(""), can_send(false)
     {}
 
 Sender::~Sender(){
@@ -17,6 +17,10 @@ ssize_t Sender::send() {
     } else {
         return -1;
     }
+}
+
+int Sender::getTargetId() const {
+    return target_id;
 }
 
 void Sender::setMessageToSend(const std::string& msg) {

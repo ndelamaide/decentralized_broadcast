@@ -58,7 +58,7 @@ class Perfectlink {
     
     std::atomic<bool> pop_queue;
     ThreadsafeQueue messages_to_send;
-    std::set<std::string> link_delivered;
+    std::set<std::string> link_delivered; // Only use receiver delivered ?
 
 };
 

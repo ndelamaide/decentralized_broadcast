@@ -78,18 +78,29 @@ void Perfectlink::deliverThreaded() {
 
             if (!(this->receiver->receive(buffer) < 0)) {
                 
-                std::string received_message(buffer);
+                std::string message_received(buffer);
 
-                if (link_delivered.find(received_message) == link_delivered.end()) {
+                
+                std::string ack = message_received.substr(0, 1);
+                int message_id = stoi(message_received.substr(1, 3));
+                std::string payload = message_received.substr(4, message_received.size());
+                std::string message_to_deliver = message_received.substr(1,  message_received.size());
 
-                    link_delivered.insert(received_message);
-                    //pop_queue = true; // NOT THE SAME PERFECT LINK SENDING AND DELIVERING !!
-                    
-                    std::cout << "link delivered " << received_message << std::endl;
+                // Only deliver messages from the target of this link
+                if (this->sender->getTargetId() == message_id) {
 
-                    // TODO @ DELIVER TO RECEIVER TOO + add mutex
-                    std::lock_guard<std::mutex> lock(receiver_mutex);
-                    this->receiver->addMessageDelivered(received_message);
+                    if (ack == "0") {
+                        if (link_delivered.find(message_to_deliver) == link_delivered.end()) {
+
+                            link_delivered.insert(message_to_deliver);
+                            //pop_queue = true; // NOT THE SAME PERFECT LINK SENDING AND DELIVERING !!
+                            
+                            std::cout << "link delivered " << message_to_deliver << std::endl;
+
+                            std::lock_guard<std::mutex> lock(receiver_mutex);
+                            this->receiver->addMessageDelivered(message_to_deliver);
+                        }
+                    }
                 }
             }
 

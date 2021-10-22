@@ -14,8 +14,9 @@ class Sender: public UDPclient {
 
     /** @brief The class constructor
      * @param target_addr the adress to send messages to
+     * @param target_id the id of the process to send messages to
      */
-    Sender(sockaddr_in target_addr);
+    Sender(sockaddr_in target_addr, int target_id);
 
     ~Sender();
 
@@ -23,6 +24,11 @@ class Sender: public UDPclient {
      * @return ssize_t of message sent or not
      */
     ssize_t send();
+
+    /** @brief Gets the target id
+     * @return the target id id
+     */
+    int getTargetId() const;
 
     /** @brief Sets the message to send
      */
@@ -39,6 +45,8 @@ class Sender: public UDPclient {
     void setCanSend(bool bool_);
 
     private:
+
+    int target_id;
 
     std::string msg_to_send;
     std::atomic<bool> can_send;
