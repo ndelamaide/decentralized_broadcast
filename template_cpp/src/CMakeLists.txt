@@ -1,7 +1,7 @@
 # DO NAME THE SYMBOLIC VARIABLE `SOURCES`
 
 include_directories(include)
-set(SOURCES src/main.cpp src/hello.c)
+set(SOURCES src/main.cpp src/hello.c src/udpserver.cpp src/udpclient.cpp src/threadsafequeue.cpp src/receiver.cpp src/sender.cpp src/perfectlink.cpp)
 
 # DO NOT EDIT THE FOLLOWING LINE
 find_package(Threads)
