@@ -8,10 +8,6 @@ Receiver::Receiver(in_addr_t ip, unsigned short port, int process_id)
     : UDPserver::UDPserver(ip, port), process_id(process_id), can_receive(true)
     {}
 
- Receiver::~Receiver(){
-     UDPserver::~UDPserver();
- }
-
  ssize_t Receiver::receive(char* buffer) {
 
      if (can_receive) {

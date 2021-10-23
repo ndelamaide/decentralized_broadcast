@@ -18,8 +18,6 @@ class Sender: public UDPclient {
      */
     Sender(sockaddr_in target_addr, int target_id);
 
-    ~Sender();
-
     /** @brief Sends the message to send to target
      * @return ssize_t of message sent or not
      */

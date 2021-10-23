@@ -6,10 +6,6 @@ Sender::Sender(sockaddr_in target_addr, int target_id)
     : UDPclient::UDPclient(target_addr), target_id(target_id), msg_to_send(""), can_send(false)
     {}
 
-Sender::~Sender(){
-    UDPclient::~UDPclient();
-}
-
 ssize_t Sender::send() {
 
     if (msg_to_send != "") {

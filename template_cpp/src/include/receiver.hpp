@@ -20,8 +20,6 @@ class Receiver: public UDPserver {
      */
     Receiver(in_addr_t ip, unsigned short port, int process_id);
 
-    ~Receiver();
-
     /** @brief Receives a message
      * @param buffer where message will be stored
      * @param ssize_t if message was receive or not
