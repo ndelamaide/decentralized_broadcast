@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
       // Inside perfect link class ?
       char packet[MAX_LENGTH] = {0};
       int ack = 0;
-      sprintf(packet, "%-1d%03lu%-d%-c", ack, my_id, seq_num, '\0');
+      sprintf(packet, "%-1d%03lu%-d", ack, my_id, seq_num);
 
       links[target_process_id-1]->addMessage(packet);
     }
