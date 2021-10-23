@@ -2,6 +2,7 @@
 #define RECEIVER_H
 
 #include "udpserver.hpp"
+#include "threadsafelist.hpp"
 
 #include <list>
 #include <string>
@@ -53,7 +54,7 @@ class Receiver: public UDPserver {
     std::atomic<bool> can_receive;
 
     /** @brief Messages delivered by this receiver (process) */
-    std::list<std::string> process_delivered;
+    ThreadsafeList process_delivered;
 
 };
 

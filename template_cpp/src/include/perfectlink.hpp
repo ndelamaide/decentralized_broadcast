@@ -4,9 +4,10 @@
 #include "receiver.hpp"
 #include "sender.hpp"
 #include "threadsafequeue.hpp"
+#include "threadsafelist.hpp"
 
-#include <list>
 #include <string>
+#include <list>
 #include <atomic>
 #include <thread>
 #include <mutex>
@@ -67,8 +68,8 @@ class Perfectlink {
     ThreadsafeQueue messages_to_send;
     ThreadsafeQueue ack_to_send;
 
-    std::list<std::string> link_delivered; // Only use receiver delivered ?
-    std::list<std::string> link_sent;
+    ThreadsafeList link_delivered; // Only use receiver delivered ?
+    ThreadsafeList link_sent;
 
 };
 

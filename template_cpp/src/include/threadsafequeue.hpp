@@ -30,8 +30,6 @@ class ThreadsafeQueue {
 
     std::queue<std::string> queue_;
     mutable std::mutex mutex_;
-
-    bool empty() const;
 };
 
 #endif

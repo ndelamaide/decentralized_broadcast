@@ -11,8 +11,6 @@
 Perfectlink::Perfectlink(Receiver* receiver, Sender* sender)
     : receiver(receiver), sender(sender), link_active(false), pop_queue(false)
     {
-        link_delivered.clear();
-
         deliver_thread = std::thread(&Perfectlink::deliverThreaded, this);
         send_thread = std::thread(&Perfectlink::sendThreaded, this);
     }
@@ -102,9 +100,7 @@ void Perfectlink::deliverThreaded() {
                 // Only deliver messages from the target of this link
                 if ((this->sender->getTargetId() == message_id) & (ack == "0")) {
 
-                    std::list<std::string>::iterator it;
-
-                    if (std::find(link_delivered.begin(), link_delivered.end(), message_to_deliver) == link_delivered.end()) {
+                    if (!link_delivered.contains(message_to_deliver)) {
 
                         link_delivered.push_back(message_to_deliver);
 
@@ -138,6 +134,11 @@ void Perfectlink::deliverThreaded() {
 }
 
 std::list<std::string> Perfectlink::getMessagesSent() const {
-    return link_sent;
+
+    if (!link_active) {
+        return link_sent.getList();
+    } else {
+        return std::list<std::string> ();
+    }
 }
 

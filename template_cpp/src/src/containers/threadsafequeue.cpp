@@ -1,6 +1,5 @@
 #include "threadsafequeue.hpp"
 
-#include <iostream>
 #include <mutex>
 #include <optional>
 #include <queue>

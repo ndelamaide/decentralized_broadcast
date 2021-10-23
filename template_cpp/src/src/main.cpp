@@ -18,6 +18,7 @@
 #include "receiver.hpp"
 #include "sender.hpp"
 #include "perfectlink.hpp"
+#include "threadsafelist.hpp"
 
 #define MAX_LENGTH 32
 
