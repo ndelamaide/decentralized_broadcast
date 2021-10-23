@@ -41,10 +41,14 @@ ssize_t UDPserver::receive(char* buffer){
     struct sockaddr_in client_addr;
     socklen_t client_addr_len;
 
-    ssize_t res_rec = recvfrom(socketDescriptor, buffer, MAX_LENGTH, 0, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
+    char receive_buffer[MAX_LENGTH];
+
+    ssize_t res_rec = recvfrom(socketDescriptor, receive_buffer, sizeof(receive_buffer), 0, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len);
 
     if (res_rec < 0){
         std::cerr << "Error receiving message" << std::endl;
+    } else {
+        strncpy(buffer, receive_buffer, sizeof(receive_buffer));
     }
 
     return res_rec;
