@@ -76,7 +76,7 @@ void Perfectlink::sendThreaded() {
                 }
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(15));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(3));
         }
     }
 }
@@ -128,7 +128,7 @@ void Perfectlink::deliverThreaded() {
                 }
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
 }
