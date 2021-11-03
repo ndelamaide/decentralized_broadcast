@@ -30,6 +30,11 @@ class Perfectlink {
      */
     void addMessage(const std::string& msg);
 
+    /** @brief Adds messages to the sending queue
+     * @param msg the list of messages to add
+     */
+    void addMessages(const std::list<std::string>& msgs);
+
     /** @brief Activates the link
      */
     void setLinkActive();
@@ -52,6 +57,16 @@ class Perfectlink {
     std::list<std::string> getMessagesSent() const;
     
     private:
+
+    /** @brief Adds a sent message to the log
+     * @param msg the message to add
+     */
+    void addSentMessageLog(const std::string& msg);
+
+    /** @brief Adds a delivered message to the log
+     * @param msg the message to add
+     */
+    void addDeliveredMessageLog(const std::string& msg);
 
     Receiver* receiver;
     Sender* sender;

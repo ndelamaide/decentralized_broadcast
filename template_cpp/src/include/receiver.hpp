@@ -46,6 +46,17 @@ class Receiver: public UDPserver {
      */
     std::list<std::string> getMessagesDelivered() const;
 
+    /** @brief Adds a message to the log
+     * @param msg the message to add
+     */
+    void addMessageLog(const std::string& msg);
+
+    /** @brief Gets the log of this receiver (process)
+     * @return the list of messages delivered or sent
+     */
+    std::list<std::string> getMessageLog() const;
+
+
     private:
 
     int process_id;
@@ -53,6 +64,9 @@ class Receiver: public UDPserver {
 
     /** @brief Messages delivered by this receiver (process) */
     ThreadsafeList process_delivered;
+
+    /** @brief Messages delivered or sent by this receiver (process) */
+    ThreadsafeList process_log;
 
 };
 

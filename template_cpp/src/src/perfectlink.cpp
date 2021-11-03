@@ -23,6 +23,12 @@ void Perfectlink::addMessage(const std::string& msg){
     messages_to_send.push(msg);
 }
 
+void Perfectlink::addMessages(const std::list<std::string>& msgs){
+    for(auto& msg: msgs){
+        this->addMessage(msg);
+    }
+}
+
 void Perfectlink::setLinkActive() {
     pop_queue = true;
     link_active = true;
@@ -53,6 +59,7 @@ void Perfectlink::sendThreaded() {
 
                 if (message_to_send) {
                     
+                    std::cout << "sending ack " << *message_to_send << std::endl;
                     this->sender->setMessageToSend(*message_to_send);
                     this->sender->send();
 
@@ -62,7 +69,10 @@ void Perfectlink::sendThreaded() {
                     
                     if (message_to_send){
 
+                        std::cout << "sending msg " << *message_to_send << std::endl;
+
                         link_sent.push_back(message_to_send->substr(1, message_to_send->size()));
+                        this->addSentMessageLog(*message_to_send);
 
                         this->sender->setMessageToSend(*message_to_send);
                         this->sender->send();
@@ -76,7 +86,7 @@ void Perfectlink::sendThreaded() {
                 }
             }
 
-            //std::this_thread::sleep_for(std::chrono::milliseconds(3));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
 }
@@ -104,9 +114,13 @@ void Perfectlink::deliverThreaded() {
 
                         link_delivered.push_back(message_to_deliver);
 
+                        this->addDeliveredMessageLog(message_to_deliver);
+
                         std::lock_guard<std::mutex> lock(receiver_mutex);
                         this->receiver->addMessageDelivered(message_to_deliver);
                     }
+
+                    std::cout << "delivering " << message_to_deliver << std::endl;
 
                     //send an ack as long as we receive the same message
                     message_received[0] = '1';
@@ -116,6 +130,7 @@ void Perfectlink::deliverThreaded() {
                 // Received an ack from target process
                 } else if ((this->receiver->getProcessId() == message_id) & (ack == "1")) {
                     
+                    std::cout << "delivering  ack " << message_to_deliver << std::endl;
                     // Received an ack for last message in queue -> can stop sending
                     if (messages_to_send.size() == 0) {
 
@@ -142,3 +157,20 @@ std::list<std::string> Perfectlink::getMessagesSent() const {
     }
 }
 
+void Perfectlink::addSentMessageLog(const std::string& msg) {
+
+    std::string message_sent(msg);
+    message_sent[0] = 'b';
+
+    std::lock_guard<std::mutex> lock(receiver_mutex);
+    this->receiver->addMessageLog(message_sent);
+}
+
+void Perfectlink::addDeliveredMessageLog(const std::string& msg) {
+
+    std::string message_delivered(msg);
+    message_delivered[0] = 'd';
+
+    std::lock_guard<std::mutex> lock(receiver_mutex);
+    this->receiver->addMessageLog(message_delivered);
+}

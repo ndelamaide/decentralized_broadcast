@@ -42,3 +42,20 @@ std::list<std::string> Receiver::getMessagesDelivered() const {
         return std::list<std::string> ();
     }
 }
+
+void Receiver::addMessageLog(const std::string& msg){
+
+    if (!process_log.contains(msg)) {
+        
+        process_log.push_back(msg);
+    }
+}
+
+std::list<std::string> Receiver::getMessageLog() const {
+    
+    if (!can_receive) {
+        return process_log.getList();
+    } else {
+        return std::list<std::string> ();
+    }
+}
