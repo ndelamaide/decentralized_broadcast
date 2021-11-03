@@ -78,10 +78,12 @@ class Perfectlink {
 
     std::mutex receiver_mutex;
     std::mutex pop_queue_mutex;
+    std::mutex messages_to_send_mutex;
+    std::mutex acks_to_send_mutex;
     
-    std::atomic<bool> pop_queue;
-    ThreadsafeQueue messages_to_send;
-    ThreadsafeQueue ack_to_send;
+    std::atomic<bool> add_log;
+    std::list<std::string> messages_to_send;
+    std::list<std::string> acks_to_send;
 
     ThreadsafeList link_delivered; // Only use receiver delivered ?
     ThreadsafeList link_sent;
