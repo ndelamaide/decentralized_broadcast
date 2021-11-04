@@ -12,6 +12,8 @@
 #include <thread>
 #include <mutex>
 
+class Broadcast;
+
 /** @brief Implements a perfect link */
 class Perfectlink {
 
@@ -20,8 +22,9 @@ class Perfectlink {
     /** @brief The class constructor
      * @param receiver the receiver in the perfect link
      * @param sender object to send messages to another process
+     * @param broadcast the broadcast this link belongs tos
      */
-    Perfectlink(Receiver* receiver, Sender* sender);
+    Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcast);
 
     ~Perfectlink();
 
@@ -70,6 +73,7 @@ class Perfectlink {
 
     Receiver* receiver;
     Sender* sender;
+    Broadcast* broadcast;
 
     std::atomic<bool> link_active;
 

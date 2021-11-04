@@ -2,8 +2,8 @@
 
 #include "perfectlink.hpp"
 
-BestEffortBroadcast::BestEffortBroadcast(Receiver* receiver, std::vector<Perfectlink*> links)
-    : Broadcast(receiver, links)
+BestEffortBroadcast::BestEffortBroadcast(Receiver* receiver)
+    : Broadcast(receiver)
     {}
 
 void BestEffortBroadcast::startBroadcast() {
@@ -18,4 +18,7 @@ void BestEffortBroadcast::startBroadcast() {
     this->setBroadcastActive();
 }
 
-
+void BestEffortBroadcast::deliver(const std::string& msg) {
+    // Add to broadcast delivered
+    std::string test = msg;
+}

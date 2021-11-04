@@ -1,4 +1,5 @@
 #include "perfectlink.hpp"
+#include "broadcast.hpp"
 
 #include <string>
 #include <optional>
@@ -8,11 +9,13 @@
 
 #define MAX_LENGTH 32
 
-Perfectlink::Perfectlink(Receiver* receiver, Sender* sender)
-    : receiver(receiver), sender(sender), link_active(false), add_to_log(true)
+Perfectlink::Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcast)
+    : receiver(receiver), sender(sender), broadcast(broadcast), link_active(false), add_to_log(true)
     {
         deliver_thread = std::thread(&Perfectlink::deliverThreaded, this);
         send_thread = std::thread(&Perfectlink::sendThreaded, this);
+
+        broadcast = nullptr;
     }
 
 Perfectlink::~Perfectlink() {
@@ -113,6 +116,8 @@ void Perfectlink::deliverThreaded() {
                         std::lock_guard<std::mutex> lock(receiver_mutex);
                         this->receiver->addMessageDelivered(message_to_deliver);
                     }
+
+                    broadcast->deliver(message_to_deliver);
 
                     //send an ack as long as we receive the same message
                     message_received[0] = '1';

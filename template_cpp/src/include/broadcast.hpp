@@ -15,11 +15,15 @@ class Broadcast {
 
     /** @brief The class constructor
      * @param receiver the receiver (process) broadcasting
-     * @param links the list of perfect links to other processes
      */
-    Broadcast(Receiver* receiver, std::vector<Perfectlink*> links);
+    Broadcast(Receiver* receiver);
 
     virtual ~Broadcast();
+
+    /** @brief Adds the list of perfect links
+     * @param links_to_add the list of perfect links to other processes
+     */
+    virtual void addLinks(std::vector<Perfectlink*> links_to_add);
 
     /** @brief Adds a message to list of messages to broadcast
      * @param msg the message to add
@@ -34,9 +38,14 @@ class Broadcast {
      */
     virtual void setBroadcastInactive();
 
-    /** @brief Starts broadcasting.
+    /** @brief Starts broadcasting
      */
     virtual void startBroadcast() = 0;
+
+    /** @brief Delivers a message
+     * @param msg the message to deliver
+     */
+    virtual void deliver(const std::string& msg) = 0;
 
     protected:
 

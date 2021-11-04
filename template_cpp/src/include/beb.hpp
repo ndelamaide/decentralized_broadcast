@@ -10,14 +10,18 @@ class BestEffortBroadcast: public Broadcast {
 
     /** @brief The class constructor
      * @param receiver the receiver (process) broadcasting
-     * @param links the list of perfect links to other processes
      */
-    BestEffortBroadcast(Receiver* receiver, std::vector<Perfectlink*> links);
+    BestEffortBroadcast(Receiver* receiver);
 
     /** @brief Starts broadcasting. Transmits the messages to broadcast
      *  to the perfect links.
      */
-    void startBroadcast() override;
+    virtual void startBroadcast() override;
+
+    /** @brief Delivers a message
+     * @param msg the message to deliver
+     */
+    virtual void deliver(const std::string& msg) override;
     
 };
 

@@ -33,6 +33,7 @@ std::string outputPath;
 Receiver* this_process = nullptr;
 std::vector<Sender*> senders;
 std::vector<Perfectlink*> links;
+Broadcast* broadcast = nullptr;
 
 
 sockaddr_in createAddress(in_addr_t ip, unsigned short port) {
@@ -168,6 +169,7 @@ int main(int argc, char **argv) {
   unsigned long my_id = parser.id();
 
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
+  broadcast = new BestEffortBroadcast(this_process);
 
   // Initialize perfect links
   for (auto& host : hosts) {
@@ -178,15 +180,14 @@ int main(int argc, char **argv) {
     // Don't add a link to itself
     if (host.id != my_id) {
       sender = new Sender(createAddress(host.ip, host.port), static_cast<int>(host.id));
-      link = new Perfectlink(this_process, sender);
+      link = new Perfectlink(this_process, sender, broadcast);
     }
 
     senders.push_back(sender);
     links.push_back(link);
   }
 
-  // Create Broadcast
-  BestEffortBroadcast broadcast(this_process, links);
+  broadcast->addLinks(links);  
 
   // Read config file
   std::string m;
@@ -208,12 +209,12 @@ int main(int argc, char **argv) {
     int ack = 0;
     sprintf(packet, "%-1d%03lu%-d", ack, my_id, seq_num);
 
-    broadcast.addMessage(packet);
+    broadcast->addMessage(packet);
   }
   
   std::cout << "Broadcasting and delivering messages...\n\n";
 
-  broadcast.startBroadcast();
+  broadcast->startBroadcast();
 
   // After a process finishes broadcasting,
   // it waits forever for the delivery of messages.

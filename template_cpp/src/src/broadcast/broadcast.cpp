@@ -1,16 +1,17 @@
 #include "broadcast.hpp"
 
-#include "perfectlink.hpp"
-
-Broadcast::Broadcast(Receiver* receiver, std::vector<Perfectlink*> links)
-    :receiver(receiver), links(links)
+Broadcast::Broadcast(Receiver* receiver)
+    :receiver(receiver)
     {}
-
 
 Broadcast::~Broadcast() {
     for(auto& link: links) {
         link = nullptr;
     }
+}
+
+void Broadcast::addLinks(std::vector<Perfectlink*> links_to_add) {
+    links = links_to_add;
 }
 
 void Broadcast::addMessage(const std::string& msg){
