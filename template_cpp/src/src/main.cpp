@@ -19,6 +19,7 @@
 #include "sender.hpp"
 #include "perfectlink.hpp"
 #include "threadsafelist.hpp"
+#include "beb.hpp"
 
 #define MAX_LENGTH 32
 
@@ -66,29 +67,24 @@ void writeOutput() {
 
   if (this_process != nullptr){
 
-    std::list<std::string> delivered = this_process->getMessagesDelivered();
+    std::list<std::string> log = this_process->getMessageLog();
 
-    for (auto& message: delivered) {
+    for (auto& message: log) {
 
-      int message_id = stoi(message.substr(0, 3));
-      std::string payload = message.substr(3, message.size());
+      char event = message[0];
+      int message_id = stoi(message.substr(1, 3));
+      std::string payload = message.substr(4, message.size());
 
-      output << "d " << message_id << " " << payload << std::endl;
+      if (event == 'd') {
 
-    }
-  }
+        output << "d " << message_id << " " << payload << std::endl;
 
-  for (auto& link: links) {
+      } else if (event == 'b') {
 
-    if (link != nullptr) {
-
-      std::list<std::string> messages_sent = link->getMessagesSent();
-
-      for (auto& message: messages_sent) {
-
-        int message_id = stoi(message.substr(0, 3));
-        std::string payload = message.substr(3, message.size());
         output << "b " << payload << std::endl;
+
+      } else {
+        std::cerr << "Unknown log message " << message << std::endl;
       }
     }
   }
@@ -189,43 +185,35 @@ int main(int argc, char **argv) {
     links.push_back(link);
   }
 
+  // Create Broadcast
+  BestEffortBroadcast broadcast(this_process, links);
+
   // Read config file
-  std::string m, i;
+  std::string m;
   std::string line;
   std::ifstream readFile(parser.configPath());
 
   while(getline(readFile,line))   {
       std::stringstream iss(line);
       getline(iss, m, ' ');
-      getline(iss, i, '\n');
   }
   readFile.close();
 
   unsigned long num_messages_to_send = static_cast<unsigned long>(std::stoi(m));
-  unsigned long target_process_id = static_cast<unsigned long>(std::stoi(i));
 
-  if (!(my_id == target_process_id)){
+  for(unsigned int seq_num = 1; seq_num <= num_messages_to_send; ++seq_num){
 
-    for(unsigned int seq_num = 1; seq_num <= num_messages_to_send; ++seq_num){
+    // Inside perfect link class ?
+    char packet[MAX_LENGTH] = {0};
+    int ack = 0;
+    sprintf(packet, "%-1d%03lu%-d", ack, my_id, seq_num);
 
-      // Inside perfect link class ?
-      char packet[MAX_LENGTH] = {0};
-      int ack = 0;
-      sprintf(packet, "%-1d%03lu%-d", ack, my_id, seq_num);
-
-      links[target_process_id-1]->addMessage(packet);
-    }
+    broadcast.addMessage(packet);
   }
   
   std::cout << "Broadcasting and delivering messages...\n\n";
 
-  for (auto& link: links) {
-
-    if (link != nullptr) {
-      link->setLinkActive();
-    }
-
-  }
+  broadcast.startBroadcast();
 
   // After a process finishes broadcasting,
   // it waits forever for the delivery of messages.

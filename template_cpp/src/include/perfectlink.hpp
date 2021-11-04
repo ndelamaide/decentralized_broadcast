@@ -81,7 +81,7 @@ class Perfectlink {
     std::mutex messages_to_send_mutex;
     std::mutex acks_to_send_mutex;
     
-    std::atomic<bool> add_log;
+    std::atomic<bool> add_to_log;
     std::list<std::string> messages_to_send;
     std::list<std::string> acks_to_send;
 

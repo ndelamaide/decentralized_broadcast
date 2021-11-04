@@ -20,21 +20,27 @@ void BestEffortBroadcast::addMessage(const std::string& msg){
 void BestEffortBroadcast::setBroadcastActive(){
     active = true;
     for(auto& link: links) {
-        link->setLinkActive();
+        if (link != nullptr) {
+            link->setLinkActive();
+        }        
     }
 }
 
 void BestEffortBroadcast::setBroadcastInactive(){
     active = false;
     for(auto& link: links) {
-        link->setLinkInactive();
+        if (link != nullptr) {
+            link->setLinkInactive();
+        }        
     }
 }
 
 void BestEffortBroadcast::startBroadcast() {
 
     for(auto& link: links){
-        link->addMessages(messages_to_broadcast);
+        if (link != nullptr) {
+            link->addMessages(messages_to_broadcast);
+        }
     }
     messages_to_broadcast.clear();
 
