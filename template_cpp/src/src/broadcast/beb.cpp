@@ -3,37 +3,8 @@
 #include "perfectlink.hpp"
 
 BestEffortBroadcast::BestEffortBroadcast(Receiver* receiver, std::vector<Perfectlink*> links)
-    :receiver(receiver), links(links)
+    : Broadcast(receiver, links)
     {}
-
-
-BestEffortBroadcast::~BestEffortBroadcast() {
-    for(auto& link: links) {
-        link = nullptr;
-    }
-}
-
-void BestEffortBroadcast::addMessage(const std::string& msg){
-    messages_to_broadcast.push_back(msg);
-}
-
-void BestEffortBroadcast::setBroadcastActive(){
-    active = true;
-    for(auto& link: links) {
-        if (link != nullptr) {
-            link->setLinkActive();
-        }        
-    }
-}
-
-void BestEffortBroadcast::setBroadcastInactive(){
-    active = false;
-    for(auto& link: links) {
-        if (link != nullptr) {
-            link->setLinkInactive();
-        }        
-    }
-}
 
 void BestEffortBroadcast::startBroadcast() {
 
