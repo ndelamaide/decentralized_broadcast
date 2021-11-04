@@ -14,8 +14,6 @@ Perfectlink::Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcas
     {
         deliver_thread = std::thread(&Perfectlink::deliverThreaded, this);
         send_thread = std::thread(&Perfectlink::sendThreaded, this);
-
-        broadcast = nullptr;
     }
 
 Perfectlink::~Perfectlink() {
