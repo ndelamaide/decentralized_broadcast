@@ -38,8 +38,7 @@ void Broadcast::setBroadcastInactive(){
 
 void Broadcast::addSentMessageLog(const std::string& msg) {
 
-    std::string message_sent(msg);
-    message_sent[0] = 'b';
+    std::string message_sent = 'b' + msg;
 
     std::lock_guard<std::mutex> lock(receiver_mutex);
     this->receiver->addMessageLog(message_sent);

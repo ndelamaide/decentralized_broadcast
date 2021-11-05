@@ -45,8 +45,7 @@ std::list<std::string> Receiver::getMessagesDelivered() const {
 
 void Receiver::addMessageLog(const std::string& msg){
 
-    if (!process_log.contains(msg)) {
-        
+    if (!process_log.contains(msg)) {    
         process_log.push_back(msg);
     }
 }

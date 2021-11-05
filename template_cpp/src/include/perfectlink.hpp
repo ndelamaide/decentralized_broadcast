@@ -54,44 +54,35 @@ class Perfectlink {
      */
     void deliverThreaded();
 
-    /** @brief Gets the messages sent by this link
-     * @return the set of messages sent
+    /** @brief Thread to send acks
      */
-    std::list<std::string> getMessagesSent() const;
+    void ackThreaded();
     
     private:
-
-    /** @brief Adds a sent message to the log
-     * @param msg the message to add
-     */
-    void addSentMessageLog(const std::string& msg);
-
-    /** @brief Adds a delivered message to the log
-     * @param msg the message to add
-     */
-    void addDeliveredMessageLog(const std::string& msg);
 
     Receiver* receiver;
     Sender* sender;
     Broadcast* broadcast;
 
+    int target_id;
+    int this_process_id;
+
     std::atomic<bool> link_active;
 
     std::thread deliver_thread;
     std::thread send_thread;
+    std::thread ack_thread;
 
     std::mutex receiver_mutex;
-    std::mutex pop_queue_mutex;
     std::mutex messages_to_send_mutex;
     std::mutex acks_to_send_mutex;
+    std::mutex broadcast_mutex;
     
     std::atomic<bool> add_to_sent;
     std::list<std::string> messages_to_send;
     std::list<std::string> acks_to_send;
 
-    ThreadsafeList link_delivered; // Only use receiver delivered ?
-    ThreadsafeList link_sent;
-
+    ThreadsafeList link_delivered;
 };
 
 

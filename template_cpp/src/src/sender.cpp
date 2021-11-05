@@ -15,6 +15,10 @@ ssize_t Sender::send() {
     }
 }
 
+ssize_t Sender::sendMessage(const std::string& msg) {
+    return UDPclient::send(msg.c_str());
+}
+
 int Sender::getTargetId() const {
     return target_id;
 }

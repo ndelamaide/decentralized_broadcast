@@ -69,18 +69,21 @@ void writeOutput() {
   if (this_process != nullptr){
 
     std::list<std::string> log = this_process->getMessageLog();
-
     for (auto& message: log) {
 
       char event = message[0];
-      int message_id = stoi(message.substr(1, 3));
-      std::string payload = message.substr(4, message.size());
 
       if (event == 'd') {
 
-        output << "d " << message_id << " " << payload << std::endl;
+        int msg_process_id = stoi(message.substr(1, 3));
+        int msg_target_id = stoi(message.substr(4, 3));
+        std::string payload = message.substr(7, message.size());
+
+        output << "d " << msg_process_id << " " << payload << std::endl;
 
       } else if (event == 'b') {
+
+        std::string payload = message.substr(1, message.size());
 
         output << "b " << payload << std::endl;
 
@@ -203,13 +206,7 @@ int main(int argc, char **argv) {
   unsigned long num_messages_to_send = static_cast<unsigned long>(std::stoi(m));
 
   for(unsigned int seq_num = 1; seq_num <= num_messages_to_send; ++seq_num){
-
-    // Inside perfect link class ?
-    char packet[MAX_LENGTH] = {0};
-    int ack = 0;
-    sprintf(packet, "%-1d%03lu%-d", ack, my_id, seq_num);
-
-    broadcast->addMessage(packet);
+    broadcast->addMessage(std::to_string(seq_num));
   }
   
   std::cout << "Broadcasting and delivering messages...\n\n";

@@ -23,6 +23,12 @@ class Sender: public UDPclient {
      */
     ssize_t send();
 
+    /** @brief Sends the message to send to target
+     * @param msg the message to send
+     * @return ssize_t of message sent or not
+     */
+    ssize_t sendMessage(const std::string& msg);
+
     /** @brief Gets the target id
      * @return the target id id
      */
