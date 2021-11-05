@@ -7,6 +7,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <mutex>
 
 /** @brief Implements a broadcast */
 class Broadcast {
@@ -49,8 +50,20 @@ class Broadcast {
 
     protected:
 
+    /** @brief Adds a sent message to the log
+     * @param msg the message to add
+     */
+    void addSentMessageLog(const std::string& msg);
+
+    /** @brief Adds a delivered message to the log
+     * @param msg the message to add
+     */
+    void addDeliveredMessageLog(const std::string& msg);
+
     Receiver* receiver;
     std::vector<Perfectlink*> links;
+
+    std::mutex receiver_mutex;
 
     bool active;
     std::list<std::string> messages_to_broadcast;

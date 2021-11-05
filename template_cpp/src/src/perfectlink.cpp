@@ -10,7 +10,7 @@
 #define MAX_LENGTH 32
 
 Perfectlink::Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcast)
-    : receiver(receiver), sender(sender), broadcast(broadcast), link_active(false), add_to_log(true)
+    : receiver(receiver), sender(sender), broadcast(broadcast), link_active(false), add_to_sent(true)
     {
         deliver_thread = std::thread(&Perfectlink::deliverThreaded, this);
         send_thread = std::thread(&Perfectlink::sendThreaded, this);
@@ -68,16 +68,15 @@ void Perfectlink::sendThreaded() {
 
                     for(auto& message_to_send: messages_to_send) {
 
-                        if (add_to_log) {
+                        if (add_to_sent) { //keep for debugging
                             link_sent.push_back(message_to_send.substr(1, message_to_send.size()));
-                            this->addSentMessageLog(message_to_send);
                         }
 
                         this->sender->setMessageToSend(message_to_send);
                         this->sender->send();
                     }
 
-                    add_to_log = false;
+                    add_to_sent = false;
                 }
             }
 
@@ -108,11 +107,6 @@ void Perfectlink::deliverThreaded() {
                     if (!link_delivered.contains(message_to_deliver)) {
 
                         link_delivered.push_back(message_to_deliver);
-
-                        this->addDeliveredMessageLog(message_received);
-
-                        std::lock_guard<std::mutex> lock(receiver_mutex);
-                        this->receiver->addMessageDelivered(message_to_deliver);
                     }
 
                     broadcast->deliver(message_to_deliver);
