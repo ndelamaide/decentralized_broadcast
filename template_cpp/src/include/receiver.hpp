@@ -41,6 +41,12 @@ class Receiver: public UDPserver {
      */
     void addMessageDelivered(const std::string& msg);
 
+    /** @brief Check if this process already delivered the message
+     * @param msg the message to check
+     * @return true if message already delivered false otherwise
+     */
+    bool hasDelivered(const std::string& msg) const;
+
     /** @brief Gets the messages delivered by this receiver (process)
      * @return the set of messages delivered
      */

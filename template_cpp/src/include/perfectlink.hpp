@@ -11,6 +11,7 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <vector>
 
 class Broadcast;
 
@@ -38,6 +39,11 @@ class Perfectlink {
      */
     void addMessages(const std::list<std::string>& msgs);
 
+    /** @brief Sets the vector of other perfectlinks
+     * @param other_links the other links
+     */
+    void addOtherLinks(std::vector<Perfectlink*> other_links);
+
     /** @brief Activates the link
      */
     void setLinkActive();
@@ -57,12 +63,24 @@ class Perfectlink {
     /** @brief Thread to send acks
      */
     void ackThreaded();
+
+    /** @brief Adds ack to the list of acks to send
+     * @param ack the ack to add
+     */
+    void addAck(const std::string& ack);
+
+    /** @brief Removes a message from the messages to send
+    * @param msg the message to remove
+    */
+    void removeMessage(const std::string& msg);
     
     private:
 
     Receiver* receiver;
     Sender* sender;
     Broadcast* broadcast;
+
+    std::vector<Perfectlink*> other_links;
 
     int target_id;
     int this_process_id;
@@ -76,9 +94,9 @@ class Perfectlink {
     std::mutex receiver_mutex;
     std::mutex messages_to_send_mutex;
     std::mutex acks_to_send_mutex;
+    std::mutex link_mutex;
     std::mutex broadcast_mutex;
-    
-    std::atomic<bool> add_to_sent;
+
     std::list<std::string> messages_to_send;
     std::list<std::string> acks_to_send;
 

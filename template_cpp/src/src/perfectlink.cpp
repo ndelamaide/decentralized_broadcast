@@ -10,7 +10,7 @@
 #define MAX_LENGTH 32
 
 Perfectlink::Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcast)
-    : receiver(receiver), sender(sender), broadcast(broadcast), link_active(false), add_to_sent(true)
+    : receiver(receiver), sender(sender), broadcast(broadcast), link_active(false)
     {
         deliver_thread = std::thread(&Perfectlink::deliverThreaded, this);
         send_thread = std::thread(&Perfectlink::sendThreaded, this);
@@ -39,6 +39,10 @@ void Perfectlink::addMessages(const std::list<std::string>& msgs){
     for(auto& msg: msgs){
         this->addMessage(msg);
     }
+}
+
+void Perfectlink::addOtherLinks(std::vector<Perfectlink*> other_links) {
+    this->other_links = other_links;
 }
 
 void Perfectlink::setLinkActive() {
@@ -94,30 +98,54 @@ void Perfectlink::deliverThreaded() {
                 std::string payload = message_received.substr(7, message_received.size());
                 std::string message_to_deliver = message_received.substr(1,  message_received.size());
 
-                // Only deliver messages from the target of this link
-                if ((target_id == msg_process_id) & (ack == "0")) {
+                if ((this_process_id == msg_target_id) & (ack == "0")){ //received a message for this process
 
-                    if (!link_delivered.contains(message_to_deliver)) {
-                        link_delivered.push_back(message_to_deliver);
+                    receiver_mutex.lock();
+                    if (!this->receiver->hasDelivered(message_to_deliver)) {
+                        this->receiver->addMessageDelivered(message_to_deliver);
                     }
+                    receiver_mutex.unlock();
 
                     broadcast_mutex.lock();
                     broadcast->deliver(message_to_deliver);
                     broadcast_mutex.unlock();
-
-                    //send an ack as long as we receive the same message
-                    message_received[0] = '1';
-
-                    std::lock_guard<std::mutex> lock(acks_to_send_mutex);
-                    acks_to_send.push_back(message_received);
                     
-                // Received an ack for a message we sent to target process
-                } else if ((this_process_id == msg_process_id) & (target_id == msg_target_id) & (ack == "1")) {
+                    message_received[0] = '1'; //send an ack as long as we receive the same message
+
+                    // If message delivered was send from target to this process, this link sends ack
+                    if ((msg_target_id == this_process_id) & (msg_process_id == target_id)) {
+                        std::lock_guard<std::mutex> lock(acks_to_send_mutex);
+                        acks_to_send.push_back(message_received);
+
+                    } else { // send ack from correct link
+
+                        std::lock_guard<std::mutex> lock(link_mutex);
+                        Perfectlink* correct_link = other_links[static_cast<unsigned long>(msg_process_id)-1];
+
+                        if (correct_link != nullptr) {
+                            correct_link->addAck(message_received);
+                        }
+                    }
                     
-                    std::lock_guard<std::mutex> lock(messages_to_send_mutex);
+                // Received an ack for a message this process sent
+                } else if ((this_process_id == msg_process_id) & (ack == "1")) {
 
                     message_received[0] = '0';
-                    messages_to_send.remove(message_received);
+
+                    if (msg_target_id == target_id) { // This link sent the message
+
+                        std::lock_guard<std::mutex> lock(messages_to_send_mutex);
+                        messages_to_send.remove(message_received);
+
+                    } else {
+
+                        std::lock_guard<std::mutex> lock(link_mutex);
+                        Perfectlink* correct_link = other_links[static_cast<unsigned long>(msg_process_id)-1];
+
+                        if (correct_link != nullptr) {
+                            correct_link->removeMessage(message_received);
+                        }
+                    }     
                 }
             }
 
@@ -149,4 +177,15 @@ void Perfectlink::ackThreaded() {
             //std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
     }
+}
+
+void Perfectlink::addAck(const std::string& ack) {
+
+    std::lock_guard<std::mutex> lock(acks_to_send_mutex);
+    acks_to_send.push_back(ack);
+}
+
+void Perfectlink::removeMessage(const std::string& msg) {
+    std::lock_guard<std::mutex> lock(messages_to_send_mutex);
+    messages_to_send.remove(msg);
 }

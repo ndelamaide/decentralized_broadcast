@@ -27,11 +27,11 @@ void Receiver::setCanReceive(bool bool_) {
 }
 
 void Receiver::addMessageDelivered(const std::string& msg){
+    process_delivered.push_back(msg);
+}
 
-    if (!process_delivered.contains(msg)) {
-        
-        process_delivered.push_back(msg);
-    }
+bool Receiver::hasDelivered(const std::string& msg) const {
+    return process_delivered.contains(msg);
 }
 
 std::list<std::string> Receiver::getMessagesDelivered() const {

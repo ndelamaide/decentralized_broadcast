@@ -3,6 +3,7 @@
 
 #include "receiver.hpp"
 #include "perfectlink.hpp"
+#include <threadsafelist.hpp>
 
 #include <list>
 #include <string>
@@ -67,6 +68,7 @@ class Broadcast {
 
     bool active;
     std::list<std::string> messages_to_broadcast;
+    ThreadsafeList messages_delivered;
     
 };
 

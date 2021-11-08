@@ -3,7 +3,7 @@
 include_directories(include)
 set(SOURCES src/main.cpp src/hello.c src/udpserver.cpp src/udpclient.cpp src/containers/threadsafequeue.cpp
      src/containers/threadsafelist.cpp src/receiver.cpp src/sender.cpp src/perfectlink.cpp
-     src/broadcast/broadcast.cpp src/broadcast/beb.cpp)
+     src/broadcast/broadcast.cpp src/broadcast/beb.cpp src/broadcast/rb.cpp)
 
 # DO NOT EDIT THE FOLLOWING LINE
 find_package(Threads)

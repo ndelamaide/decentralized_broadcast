@@ -25,8 +25,10 @@ void BestEffortBroadcast::startBroadcast() {
 
 void BestEffortBroadcast::deliver(const std::string& msg) {
     
-    this->addDeliveredMessageLog(msg);
+    if (!messages_delivered.contains(msg)) {
 
-    std::lock_guard<std::mutex> lock(receiver_mutex);
-    this->receiver->addMessageDelivered(msg);
+        messages_delivered.push_back(msg);
+        
+        this->addDeliveredMessageLog(msg);      
+    }
 }

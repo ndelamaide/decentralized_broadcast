@@ -20,6 +20,7 @@
 #include "perfectlink.hpp"
 #include "threadsafelist.hpp"
 #include "beb.hpp"
+#include "rb.hpp"
 
 #define MAX_LENGTH 32
 
@@ -172,7 +173,7 @@ int main(int argc, char **argv) {
   unsigned long my_id = parser.id();
 
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
-  broadcast = new BestEffortBroadcast(this_process);
+  broadcast = new ReliableBroadcast(this_process);
 
   // Initialize perfect links
   for (auto& host : hosts) {
@@ -190,6 +191,11 @@ int main(int argc, char **argv) {
     links.push_back(link);
   }
 
+  for (auto& link: links) {
+    if (link != nullptr) {
+      link->addOtherLinks(links);
+    }
+  }
   broadcast->addLinks(links);  
 
   // Read config file
