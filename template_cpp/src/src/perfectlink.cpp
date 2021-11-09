@@ -76,7 +76,7 @@ void Perfectlink::sendThreaded() {
                     }
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
     }
 }
@@ -107,12 +107,12 @@ void Perfectlink::deliverThreaded() {
                     receiver_mutex.unlock();
 
                     broadcast_mutex.lock();
-                    broadcast->deliver(message_to_deliver);
+                    broadcast->deliver(message_received);
                     broadcast_mutex.unlock();
                     
                     message_received[0] = '1'; //send an ack as long as we receive the same message
 
-                    // If message delivered was send from target to this process, this link sends ack
+                    // If message delivered was send to this process from target of this link, this link sends ack
                     if ((msg_target_id == this_process_id) & (msg_process_id == target_id)) {
                         std::lock_guard<std::mutex> lock(acks_to_send_mutex);
                         acks_to_send.push_back(message_received);
@@ -188,4 +188,18 @@ void Perfectlink::addAck(const std::string& ack) {
 void Perfectlink::removeMessage(const std::string& msg) {
     std::lock_guard<std::mutex> lock(messages_to_send_mutex);
     messages_to_send.remove(msg);
+}
+
+void Perfectlink::addMessageRelay(const std::string& msg) {
+    
+    char string_target_id[4];
+    sprintf(string_target_id, "%03d", target_id);
+
+    std::string packet(msg);
+    packet[0] = '0';
+    packet.replace(4, 3, string_target_id);
+
+    //std::cout << "message to relay " << msg << " - relaying " << packet << std::endl;
+    std::lock_guard<std::mutex> lock(messages_to_send_mutex);
+    messages_to_send.push_back(packet);
 }

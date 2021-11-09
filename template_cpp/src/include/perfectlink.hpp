@@ -73,6 +73,11 @@ class Perfectlink {
     * @param msg the message to remove
     */
     void removeMessage(const std::string& msg);
+
+    /** @brief Add a message to relay to other processes
+    * @param msg the message to relay
+    */
+    void addMessageRelay(const std::string& msg);
     
     private:
 

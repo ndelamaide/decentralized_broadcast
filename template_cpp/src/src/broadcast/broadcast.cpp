@@ -46,7 +46,8 @@ void Broadcast::addSentMessageLog(const std::string& msg) {
 
 void Broadcast::addDeliveredMessageLog(const std::string& msg) {
 
-    std::string message_delivered = 'd' + msg;
+    std::string message_delivered(msg);
+    message_delivered[0] = 'd';
 
     std::lock_guard<std::mutex> lock(receiver_mutex);
     this->receiver->addMessageLog(message_delivered);

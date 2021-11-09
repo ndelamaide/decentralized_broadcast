@@ -20,10 +20,10 @@ class ReliableBroadcast : public BestEffortBroadcast {
      */
     virtual void deliver(const std::string& msg) override;
 
-    private:
-
-    ThreadsafeList messages_delivered;
-
+    /** @brief Relay (broadcasts) a message delivered
+     * @param msg the message to relay
+     */
+    void relay(const std::string& msg);
 };
 
 #endif
