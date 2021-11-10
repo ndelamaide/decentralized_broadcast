@@ -2,8 +2,6 @@
 #define RB_H
 
 #include "beb.hpp"
-#include "threadsafelist.hpp"
-
 
 /** @brief Implements reliable broadcast */
 class ReliableBroadcast : public BestEffortBroadcast {

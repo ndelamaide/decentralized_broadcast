@@ -103,12 +103,12 @@ void Perfectlink::deliverThreaded() {
                     receiver_mutex.lock();
                     if (!this->receiver->hasDelivered(message_to_deliver)) {
                         this->receiver->addMessageDelivered(message_to_deliver);
+
+                        broadcast_mutex.lock();
+                        broadcast->deliver(message_received);
+                        broadcast_mutex.unlock();
                     }
                     receiver_mutex.unlock();
-
-                    broadcast_mutex.lock();
-                    broadcast->deliver(message_received);
-                    broadcast_mutex.unlock();
                     
                     message_received[0] = '1'; //send an ack as long as we receive the same message
 
@@ -199,7 +199,6 @@ void Perfectlink::addMessageRelay(const std::string& msg) {
     packet[0] = '0';
     packet.replace(4, 3, string_target_id);
 
-    //std::cout << "message to relay " << msg << " - relaying " << packet << std::endl;
     std::lock_guard<std::mutex> lock(messages_to_send_mutex);
     messages_to_send.push_back(packet);
 }
