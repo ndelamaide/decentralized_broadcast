@@ -32,26 +32,26 @@ void UniformReliableBroadcast::startBroadcast() {
 
 void UniformReliableBroadcast::deliver(const std::string& msg) {
 
-    std::string payload = msg.substr(7, msg.size());
-    std::string process_sender = msg.substr(1, 3);
-    std::string process_sender_payload;
-    std::string process_relay = "";
-    
-    // r then id of process who relayed then msg
-    if (payload[0] == 'r') { // if it's a relayed msg
+    std::string msg_payload = msg.substr(7, msg.size());
+    std::string msg_sender = msg.substr(1, 3);
 
-        process_sender_payload = payload.substr(4, payload.size());
-        process_relay = payload.substr(1, 3);
+    std::string sender_message; // sender_id, message pair
+    
+    if (msg_payload[0] == 'r') { // if it's a relayed msg
+
+        std::string original_process = msg_payload.substr(1, 3);
+        std::string original_payload = msg_payload.substr(4, msg_payload.size());        
+
+        sender_message = original_process + original_payload;
+
+        ack.insert(std::make_pair(sender_message, msg_sender));
 
     } else {
 
-        process_sender_payload = payload;
-        process_relay = msg.substr(1, 3); // Original sender
+        sender_message = msg_sender + msg_payload;
+
+        ack.insert(std::make_pair(sender_message, msg_sender));
     }
-
-    std::string sender_message = process_sender + process_sender_payload;
-
-    ack.insert(std::make_pair(sender_message, process_relay));
 
     std::lock_guard<std::mutex> lock(pending_mutex);
 
@@ -66,29 +66,29 @@ void UniformReliableBroadcast::deliver(const std::string& msg) {
 
 void UniformReliableBroadcast::relay(const std::string& msg) {
 
-    std::string message_to_relay(msg);
-
-    char string_process_id[4];
-
-    receiver_mutex.lock();
-    sprintf(string_process_id, "%03d", this->receiver->getProcessId());
-    receiver_mutex.unlock();
-
     if (msg[7] == 'r') {
 
-        message_to_relay.replace(8, 3, string_process_id);
+        for (auto& link: links) {
+            if (link != nullptr) {
 
-    } else {
+                link->addMessage(msg.substr(7, msg.size()));
+            }
+        }
 
-        std::string header = msg.substr(0, 7);
+    } else { // we are the first to relay this msg
+
+        std::string message_to_relay;
+
+        std::string original_sender = msg.substr(1, 3);
         std::string payload = msg.substr(7, msg.size());
 
-        message_to_relay = header + 'r' + string_process_id + payload;
-    }
+        message_to_relay = 'r' + original_sender + payload;
 
-    for (auto& link: links) {
-        if (link != nullptr) {
-            link->addMessageRelay(message_to_relay);
+        for (auto& link: links) {
+            if (link != nullptr) {
+                
+                link->addMessage(message_to_relay);
+            }
         }
     }
 }

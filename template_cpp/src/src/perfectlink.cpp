@@ -30,7 +30,7 @@ void Perfectlink::addMessage(const std::string& msg){
 
     char packet[MAX_LENGTH] = {0};
     int ack = 0;
-    sprintf(packet, "%-1d%03d%03d%-s", ack, this_process_id, target_id, msg.c_str());
+    sprintf(packet, "%-1d%03d%03d%-s%c", ack, this_process_id, target_id, msg.c_str(), '\0');
 
     messages_to_send.push_back(packet);
 }
