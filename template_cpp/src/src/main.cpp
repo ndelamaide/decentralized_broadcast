@@ -22,6 +22,7 @@
 #include "beb.hpp"
 #include "rb.hpp"
 #include "urb.hpp"
+#include "fifo.hpp"
 
 #define MAX_LENGTH 32
 
@@ -174,7 +175,7 @@ int main(int argc, char **argv) {
   unsigned long my_id = parser.id();
 
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
-  broadcast = new UniformReliableBroadcast(this_process, hosts.size());
+  broadcast = new Fifo(this_process, hosts.size());
 
   // Initialize perfect links
   for (auto& host : hosts) {

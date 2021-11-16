@@ -54,7 +54,7 @@ class Broadcast {
     /** @brief Adds a sent message to the log
      * @param msg the message to add
      */
-    void addSentMessageLog(const std::string& msg);
+    virtual void addSentMessageLog(const std::string& msg);
 
     /** @brief Adds a delivered message to the log
      * @param msg the message to add

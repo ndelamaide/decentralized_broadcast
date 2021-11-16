@@ -44,10 +44,10 @@ class UniformReliableBroadcast : public BestEffortBroadcast {
 
     /** @brief Delivers pending messages if can deliver them
      */
-    void deliverPending();
+    virtual void deliverPending();
 
 
-    private:
+    protected:
 
     /** @brief Changes a pending message to the format of
      * messages sent : ack.sender.target.payload
