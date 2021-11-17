@@ -6,11 +6,20 @@
 #include <thread>
 #include <algorithm>
 
-UniformReliableBroadcast::UniformReliableBroadcast(Receiver* receiver, unsigned long NUM_PROCESSES)
-    : BestEffortBroadcast(receiver), NUM_PROCESSES(NUM_PROCESSES)
+UniformReliableBroadcast::UniformReliableBroadcast(Receiver* receiver, BestEffortBroadcast* beb, unsigned long NUM_PROCESSES, bool log)
+    : Broadcast(receiver, log), NUM_PROCESSES(NUM_PROCESSES)
     {
+        this->beb = beb;
+        this->beb->setUpperLayer(this);
         deliver_pending_thread = std::thread(&UniformReliableBroadcast::deliverPending, this);
     }
+
+
+void UniformReliableBroadcast::setBroadcastActive() {
+    
+    this->active = true;
+    this->beb->setBroadcastActive();
+}
 
 void UniformReliableBroadcast::startBroadcast() {
 
@@ -25,9 +34,21 @@ void UniformReliableBroadcast::startBroadcast() {
         
         std::string message_pending = str_process_id + message;
         pending.push_back(message_pending);
+
+        this->beb->broadcastMessage(message);
+        this->addSentMessageLog(message);
     }
 
-    BestEffortBroadcast::startBroadcast();
+    messages_to_broadcast.clear();
+
+    this->setBroadcastActive();
+    this->beb->setBroadcastActive();
+}
+
+void UniformReliableBroadcast::broadcastMessage(const std::string& msg) {
+
+    pending.push_back(msg);
+    this->beb->broadcastMessage(msg);
 }
 
 void UniformReliableBroadcast::deliver(const std::string& msg) {
@@ -60,35 +81,21 @@ void UniformReliableBroadcast::deliver(const std::string& msg) {
     if (!(std::find(pending.begin(), pending.end(), sender_message) != pending.end())) {
         
         pending.push_back(sender_message);
-        this->relay(msg);
-    }
-}
 
-void UniformReliableBroadcast::relay(const std::string& msg) {
+        if (msg[7] == 'r') {
 
-    if (msg[7] == 'r') {
+            this->beb->broadcastMessage(msg.substr(7, msg.size()));
 
-        for (auto& link: links) {
-            if (link != nullptr) {
+        } else { // we are the first to relay this msg
 
-                link->addMessage(msg.substr(7, msg.size()));
-            }
-        }
+            std::string message_to_relay;
 
-    } else { // we are the first to relay this msg
+            std::string original_sender = msg.substr(1, 3);
+            std::string payload = msg.substr(7, msg.size());
 
-        std::string message_to_relay;
+            message_to_relay = 'r' + original_sender + payload;
 
-        std::string original_sender = msg.substr(1, 3);
-        std::string payload = msg.substr(7, msg.size());
-
-        message_to_relay = 'r' + original_sender + payload;
-
-        for (auto& link: links) {
-            if (link != nullptr) {
-                
-                link->addMessage(message_to_relay);
-            }
+            this->beb->broadcastMessage(message_to_relay);
         }
     }
 }
@@ -109,13 +116,20 @@ void UniformReliableBroadcast::deliverPending() {
             
                     messages_delivered.push_back(msg_pending);
 
-                    std::string message_to_deliver = this->toMessageFormat(msg_pending);
+                    if (log) {
+                        std::string message_to_deliver = this->toMessageFormat(msg_pending);
 
-                    this->addDeliveredMessageLog(message_to_deliver);
+                        this->addDeliveredMessageLog(message_to_deliver);
+                    }
+
+                    std::lock_guard<std::mutex> lock(upper_layer_mutex);
+                    if (upper_layer != nullptr) {
+                        upper_layer->deliver(msg_pending);
+                    }
                 }
             }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 }
 

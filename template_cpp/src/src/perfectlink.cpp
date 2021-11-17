@@ -72,11 +72,11 @@ void Perfectlink::sendThreaded() {
                     for(auto& message_to_send: messages_to_send) {
                         this->sender->sendMessage(message_to_send);
 
-                        //std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     }
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            std::this_thread::sleep_for(std::chrono::milliseconds(4));
         }
     }
 }
@@ -168,8 +168,8 @@ void Perfectlink::ackThreaded() {
 
                     for(auto& ack_to_send: acks_to_send) {
                         this->sender->sendMessage(ack_to_send);
-
-                        //std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                        
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     }
                     acks_to_send.clear();
                 }

@@ -23,7 +23,7 @@ class Perfectlink {
     /** @brief The class constructor
      * @param receiver the receiver in the perfect link
      * @param sender object to send messages to another process
-     * @param broadcast the broadcast this link belongs tos
+     * @param broadcast the broadcast this link belongs to
      */
     Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcast);
 

@@ -10,13 +10,19 @@ class BestEffortBroadcast: public Broadcast {
 
     /** @brief The class constructor
      * @param receiver the receiver (process) broadcasting
+     * @param log true if as to log the messages
      */
-    BestEffortBroadcast(Receiver* receiver);
+    BestEffortBroadcast(Receiver* receiver, bool log = false);
 
     /** @brief Starts broadcasting. Transmits the messages to broadcast
      *  to the perfect links.
      */
     virtual void startBroadcast() override;
+
+    /** @brief Broadcasts a message
+     * @param msg the message to broadcast
+     */
+    virtual void broadcastMessage(const std::string& msg) override;
 
     /** @brief Delivers a message
      * @param msg the message to deliver

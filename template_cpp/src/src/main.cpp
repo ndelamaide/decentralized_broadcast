@@ -20,7 +20,7 @@
 #include "perfectlink.hpp"
 #include "threadsafelist.hpp"
 #include "beb.hpp"
-#include "rb.hpp"
+//#include "rb.hpp"
 #include "urb.hpp"
 #include "fifo.hpp"
 
@@ -77,6 +77,8 @@ void writeOutput() {
       char event = message[0];
 
       if (event == 'd') {
+
+        //std::cout << "writing " << message << std::endl;
 
         int msg_process_id = stoi(message.substr(1, 3));
         int msg_target_id = stoi(message.substr(4, 3));
@@ -175,7 +177,9 @@ int main(int argc, char **argv) {
   unsigned long my_id = parser.id();
 
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
-  broadcast = new Fifo(this_process, hosts.size());
+  BestEffortBroadcast* beb = new BestEffortBroadcast(this_process);
+  UniformReliableBroadcast* urb = new UniformReliableBroadcast(this_process, beb, hosts.size());
+  broadcast = new Fifo(this_process, urb, hosts.size(), bool (true));
 
   // Initialize perfect links
   for (auto& host : hosts) {
@@ -186,7 +190,7 @@ int main(int argc, char **argv) {
     // Don't add a link to itself
     if (host.id != my_id) {
       sender = new Sender(createAddress(host.ip, host.port), static_cast<int>(host.id));
-      link = new Perfectlink(this_process, sender, broadcast);
+      link = new Perfectlink(this_process, sender, beb);
     }
 
     senders.push_back(sender);
@@ -198,7 +202,8 @@ int main(int argc, char **argv) {
       link->addOtherLinks(links);
     }
   }
-  broadcast->addLinks(links);  
+
+  beb->addLinks(links);  // lowest layer using the links
 
   // Read config file
   std::string m;

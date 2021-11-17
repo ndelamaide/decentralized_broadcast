@@ -1,7 +1,7 @@
 #include "broadcast.hpp"
 
-Broadcast::Broadcast(Receiver* receiver)
-    :receiver(receiver)
+Broadcast::Broadcast(Receiver* receiver, bool log)
+    :receiver(receiver), upper_layer(nullptr), log(log)
     {}
 
 Broadcast::~Broadcast() {
@@ -34,6 +34,10 @@ void Broadcast::setBroadcastInactive(){
             link->setLinkInactive();
         }        
     }
+}
+
+void Broadcast::setUpperLayer(Broadcast* upper_layer) {
+    this->upper_layer = upper_layer;
 }
 
 void Broadcast::addSentMessageLog(const std::string& msg) {

@@ -2,8 +2,10 @@
 
 #include "perfectlink.hpp"
 
-BestEffortBroadcast::BestEffortBroadcast(Receiver* receiver)
-    : Broadcast(receiver)
+#include <string>
+
+BestEffortBroadcast::BestEffortBroadcast(Receiver* receiver, bool log)
+    : Broadcast(receiver, log)
     {}
 
 void BestEffortBroadcast::startBroadcast() {
@@ -23,12 +25,28 @@ void BestEffortBroadcast::startBroadcast() {
     this->setBroadcastActive();
 }
 
+void BestEffortBroadcast::broadcastMessage(const std::string& msg) {
+
+    for(auto& link: links){
+        if (link != nullptr) {
+            link->addMessage(msg);
+        }
+    }
+}
+
 void BestEffortBroadcast::deliver(const std::string& msg) {
     
     if (!messages_delivered.contains(msg)) {
 
         messages_delivered.push_back(msg);
         
-        this->addDeliveredMessageLog(msg);      
+        if (log) {
+            this->addDeliveredMessageLog(msg);  
+        }
+
+        std::lock_guard<std::mutex> lock(upper_layer_mutex);
+        if (upper_layer != nullptr) {
+            upper_layer->deliver(msg);
+        }
     }
 }

@@ -17,8 +17,9 @@ class Broadcast {
 
     /** @brief The class constructor
      * @param receiver the receiver (process) broadcasting
+     * @param log true if has to log messages into output file
      */
-    Broadcast(Receiver* receiver);
+    Broadcast(Receiver* receiver, bool log = false);
 
     virtual ~Broadcast();
 
@@ -44,10 +45,20 @@ class Broadcast {
      */
     virtual void startBroadcast() = 0;
 
+    /** @brief Broadcasts a message
+     * @param msg the message to broadcast
+     */
+    virtual void broadcastMessage(const std::string& msg) = 0;
+
     /** @brief Delivers a message
      * @param msg the message to deliver
      */
     virtual void deliver(const std::string& msg) = 0;
+
+    /** @brief Sets the upper layer broadcast abstraction
+     * @param upper_layer the upper layer
+     */
+    virtual void setUpperLayer(Broadcast* upper_layer);
 
     protected:
 
@@ -64,12 +75,16 @@ class Broadcast {
     Receiver* receiver;
     std::vector<Perfectlink*> links;
 
+    Broadcast* upper_layer;
+    
+    std::mutex upper_layer_mutex;
     std::mutex receiver_mutex;
 
     bool active;
     std::list<std::string> messages_to_broadcast;
     ThreadsafeList messages_delivered;
-    
+
+    bool log;    
 };
 
 

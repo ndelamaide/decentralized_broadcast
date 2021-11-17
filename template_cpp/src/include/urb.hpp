@@ -1,6 +1,7 @@
 #ifndef URB_H
 #define URB_H
 
+#include "broadcast.hpp"
 #include "beb.hpp"
 
 #include <map>
@@ -11,30 +12,36 @@
 #include <mutex>
 
 /** @brief Implements uniform reliable broadcast */
-class UniformReliableBroadcast : public BestEffortBroadcast {
+class UniformReliableBroadcast : public Broadcast {
 
     public:
 
     /** @brief The class constructor
      * @param receiver the receiver (process) broadcasting
+     * @param beb the best effort broadcast
      * @param NUM_PROCESSES number of processes in the system
+     * @param log true if has to log messages into output file
      */
-    UniformReliableBroadcast(Receiver* receiver, unsigned long NUM_PROCESSES);
+    UniformReliableBroadcast(Receiver* receiver, BestEffortBroadcast* beb, unsigned long NUM_PROCESSES, bool log = false);
+
+    /** @brief Activates the broadcast
+     */
+    virtual void setBroadcastActive() override;
 
     /** @brief Starts broadcasting. Transmits the messages to broadcast
      *  to the perfect links.
      */
     virtual void startBroadcast() override;
 
+    /** @brief Broadcasts a message
+     * @param msg the message to broadcast
+     */
+    virtual void broadcastMessage(const std::string& msg) override;
+
     /** @brief Delivers a message
      * @param msg the message to deliver
      */
     virtual void deliver(const std::string& msg) override;
-
-    /** @brief Relay (broadcasts) a message delivered
-     * @param msg the message to relay
-     */
-    void relay(const std::string& msg);
 
     /** @brief Checks if can deliver a message
      * @param msg the message to deliver
@@ -47,7 +54,9 @@ class UniformReliableBroadcast : public BestEffortBroadcast {
     virtual void deliverPending();
 
 
-    protected:
+    private:
+
+    BestEffortBroadcast* beb;
 
     /** @brief Changes a pending message to the format of
      * messages sent : ack.sender.target.payload
