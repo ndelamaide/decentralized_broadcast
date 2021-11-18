@@ -24,8 +24,6 @@
 #include "urb.hpp"
 #include "fifo.hpp"
 
-#define MAX_LENGTH 32
-
 
 sockaddr_in createAddress(in_addr_t ip, unsigned short port);
 void stopProcesses();
@@ -65,13 +63,77 @@ void stopProcesses() {
   }
 }
 
+std::list<std::string> deconcatMessages(std::list<std::string> log) {
+
+  std::list<std::string> messages_deconcat;
+
+  for (auto& msg: log) {
+
+    char event = msg[0];
+
+    std::string header;
+    unsigned long num_messages(0);
+    std::string messages;
+
+    if (event == 'b') {
+      
+      header = event;
+      num_messages = stoul(msg.substr(1, 2));
+      messages = msg.substr(3, msg.size());
+
+    } else if (event == 'd') {
+
+      header = msg.substr(0, 7);
+      num_messages = stoul(msg.substr(7, 2));
+      messages = msg.substr(9, msg.size());
+
+    } else {
+
+        std::cerr << "Unknown log message " << msg << std::endl;
+    }
+
+    unsigned long msg_start(0);
+    unsigned long msg_end(0);
+
+    for (unsigned long i = 0; i < num_messages; ++i) {
+
+      msg_end = messages.find('s', msg_start + 1);
+
+      if (msg_end == std::string::npos) {
+        msg_end = messages.size();
+      }
+
+      std::string message = header + messages.substr(msg_start, msg_end - msg_start); // assumes that no more than 9999 messages are sent
+
+      messages_deconcat.push_back(message);
+
+      msg_start = msg_end + 1;
+    }
+  }
+
+  return messages_deconcat;
+}
+
 void writeOutput() {
 
   std::stringstream output;
 
   if (this_process != nullptr){
 
-    std::list<std::string> log = this_process->getMessageLog();
+    std::list<std::string> log;
+
+    if (broadcast != nullptr) {
+
+      if (broadcast->getConcat()) {
+
+        log = deconcatMessages(this_process->getMessageLog());
+
+      } else {
+
+        log = this_process->getMessageLog();
+      }
+    }
+    
     for (auto& message: log) {
 
       char event = message[0];
@@ -224,6 +286,7 @@ int main(int argc, char **argv) {
   
   std::cout << "Broadcasting and delivering messages...\n\n";
 
+  broadcast->concatMessages();
   broadcast->startBroadcast();
 
   // After a process finishes broadcasting,

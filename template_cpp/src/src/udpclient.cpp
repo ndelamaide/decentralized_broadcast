@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <string>
 
-#define MAX_LENGTH 32
+#define MAX_LENGTH 94
 
 UDPclient::UDPclient(sockaddr_in target_addr)
     : target_addr(target_addr)

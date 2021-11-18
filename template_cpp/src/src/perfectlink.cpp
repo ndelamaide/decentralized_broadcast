@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <list>
 
-#define MAX_LENGTH 32
+#define MAX_LENGTH 94
 
 Perfectlink::Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcast)
     : receiver(receiver), sender(sender), broadcast(broadcast), link_active(false)

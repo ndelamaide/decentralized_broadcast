@@ -60,6 +60,15 @@ class Broadcast {
      */
     virtual void setUpperLayer(Broadcast* upper_layer);
 
+    /** @brief Concatenates the messages to send
+     */
+    void concatMessages();
+
+    /** @brief Gets the concat boolean
+     * @return the boolean concat
+     */
+    bool getConcat() const;
+
     protected:
 
     /** @brief Adds a sent message to the log
@@ -84,7 +93,8 @@ class Broadcast {
     std::list<std::string> messages_to_broadcast;
     ThreadsafeList messages_delivered;
 
-    bool log;    
+    bool log;
+    bool concat;    
 };
 
 
