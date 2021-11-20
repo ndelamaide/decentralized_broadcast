@@ -38,6 +38,12 @@ class UniformReliableBroadcast : public Broadcast {
      */
     virtual void broadcastMessage(const std::string& msg) override;
 
+    /** @brief Broadcasts a message
+     * @param msg the message to broadcast
+     * @param add_id true if need to prepend process_id to message before adding to pending list
+     */
+    void broadcastMessage(const std::string& msg, bool add_id);
+
     /** @brief Delivers a message
      * @param msg the message to deliver
      */

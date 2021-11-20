@@ -239,6 +239,8 @@ int main(int argc, char **argv) {
   outputPath = parser.outputPath();
   unsigned long my_id = parser.id();
 
+  std::cout << "Number of hosts " << hosts.size() << std::endl;
+
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
   BestEffortBroadcast* beb = new BestEffortBroadcast(this_process);
   UniformReliableBroadcast* urb = new UniformReliableBroadcast(this_process, beb, hosts.size());

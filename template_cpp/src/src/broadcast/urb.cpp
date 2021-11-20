@@ -51,6 +51,28 @@ void UniformReliableBroadcast::broadcastMessage(const std::string& msg) {
     this->beb->broadcastMessage(msg);
 }
 
+void UniformReliableBroadcast::broadcastMessage(const std::string& msg, bool add_id) {
+    
+    if (add_id) {
+
+        receiver_mutex.lock();
+        int process_id = this->receiver->getProcessId();
+        receiver_mutex.unlock();
+
+        char str_process_id[4];
+        sprintf(str_process_id, "%03d", process_id);
+        
+        std::string message_pending = str_process_id + msg;
+        pending.push_back(message_pending);
+
+    } else {
+
+        pending.push_back(msg);
+    }
+
+    this->beb->broadcastMessage(msg);
+}
+
 void UniformReliableBroadcast::deliver(const std::string& msg) {
 
     std::string msg_payload = msg.substr(7, msg.size());
@@ -124,12 +146,13 @@ void UniformReliableBroadcast::deliverPending() {
 
                     std::lock_guard<std::mutex> lock(upper_layer_mutex);
                     if (upper_layer != nullptr) {
+                    
                         upper_layer->deliver(msg_pending);
                     }
                 }
             }
         }
-        //std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 }
 
