@@ -60,8 +60,6 @@ void Fifo::deliver(const std::string& msg) { // called in deliverpending from ur
     unsigned long process_id_msg = std::stoul(msg.substr(0, 3));
 
     for (auto& pending_message: pending) {
-
-        std::cout << "pending fifo " << pending_message << std::endl;
         
         unsigned long process_id_pending = std::stoul(pending_message.substr(0, 3));
 
