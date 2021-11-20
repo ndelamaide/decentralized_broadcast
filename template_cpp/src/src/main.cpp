@@ -27,6 +27,7 @@
 
 sockaddr_in createAddress(in_addr_t ip, unsigned short port);
 void stopProcesses();
+std::list<std::string> deconcatMessages(std::list<std::string> log);
 void writeOutput();
 
 std::string outputPath;
