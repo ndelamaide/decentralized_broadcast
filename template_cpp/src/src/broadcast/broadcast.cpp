@@ -1,6 +1,6 @@
 #include "broadcast.hpp"
 
-#define MAX_LENGTH 94
+#define MAX_LENGTH 110
 
 Broadcast::Broadcast(Receiver* receiver, bool log)
     :receiver(receiver), upper_layer(nullptr), log(log)
@@ -62,7 +62,7 @@ void Broadcast::concatMessages() {
 
         if(group_num < num_concat) {
 
-            if (group_num == group_by - 1) { // don't add sep for last message to concat
+            if (msg_num == group_by - 1) { // don't add sep for last message to concat
 
                 message_concatenated += message;
 

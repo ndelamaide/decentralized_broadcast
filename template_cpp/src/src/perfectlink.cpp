@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <list>
 
-#define MAX_LENGTH 94
+#define MAX_LENGTH 110
 
 Perfectlink::Perfectlink(Receiver* receiver, Sender* sender, Broadcast* broadcast)
     : receiver(receiver), sender(sender), broadcast(broadcast), link_active(false)
@@ -71,7 +71,7 @@ void Perfectlink::sendThreaded() {
 
                     for(auto& message_to_send: messages_to_send) {
                         this->sender->sendMessage(message_to_send);
-
+                        
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     }
                 }

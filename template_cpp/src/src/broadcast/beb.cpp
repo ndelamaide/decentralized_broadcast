@@ -26,7 +26,7 @@ void BestEffortBroadcast::startBroadcast() {
 }
 
 void BestEffortBroadcast::broadcastMessage(const std::string& msg) {
-
+    
     for(auto& link: links){
         if (link != nullptr) {
             link->addMessage(msg);

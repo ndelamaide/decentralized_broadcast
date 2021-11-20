@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <cstring>
 
-#define MAX_LENGTH 94
+#define MAX_LENGTH 110
 
 UDPserver::UDPserver(in_addr_t ip, unsigned short port){
     
