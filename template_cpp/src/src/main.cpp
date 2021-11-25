@@ -23,6 +23,7 @@
 //#include "rb.hpp"
 #include "urb.hpp"
 #include "fifo.hpp"
+#include "lcb.hpp"
 
 
 sockaddr_in createAddress(in_addr_t ip, unsigned short port);
@@ -244,7 +245,6 @@ int main(int argc, char **argv) {
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
   BestEffortBroadcast* beb = new BestEffortBroadcast(this_process);
   UniformReliableBroadcast* urb = new UniformReliableBroadcast(this_process, beb, hosts.size());
-  broadcast = new Fifo(this_process, urb, hosts.size(), bool (true));
 
   // Initialize perfect links
   for (auto& host : hosts) {
@@ -272,14 +272,36 @@ int main(int argc, char **argv) {
 
   // Read config file
   std::string m;
+  std::string id;
   std::string line;
   std::ifstream readFile(parser.configPath());
 
+  std::list<int> localized_ids; //dependencies
+
+  // Get number of messages to send
+  getline(readFile,line);
+  std::stringstream iss(line);
+  getline(iss, m, ' ');
+
   while(getline(readFile,line))   {
       std::stringstream iss(line);
-      getline(iss, m, ' ');
+      getline(iss, id, ' ');
+
+      if (std::to_string(my_id) == id) {
+        std::cout << "my id " << id << std::endl;
+
+        std::string other_id;
+
+        while(getline(iss, other_id, ' ')) {
+          std::cout << "other id " << other_id << std::endl;
+          localized_ids.push_back(stoi(other_id));
+        }
+      }
   }
   readFile.close();
+
+  // Create boradcast
+  broadcast = new LocalizedCausalBroadcast(this_process, urb, hosts.size(), localized_ids, bool (true));
 
   unsigned long num_messages_to_send = static_cast<unsigned long>(std::stoi(m));
 
@@ -289,7 +311,7 @@ int main(int argc, char **argv) {
   
   std::cout << "Broadcasting and delivering messages...\n\n";
 
-  broadcast->concatMessages();
+  //broadcast->concatMessages();
   broadcast->startBroadcast();
 
   // After a process finishes broadcasting,

@@ -46,8 +46,6 @@ void Fifo::broadcastMessage(const std::string& msg) {
 void Fifo::deliver(const std::string& msg) { // called in deliverpending from urb layer
     // msg should be process_id-message-lsn
 
-    std::list<std::string>::iterator it;
-
     pending_mutex.lock();
     if (!(std::find(pending.begin(), pending.end(), msg) != pending.end())) {
         
