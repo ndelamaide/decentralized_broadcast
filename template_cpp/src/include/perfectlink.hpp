@@ -52,6 +52,11 @@ class Perfectlink {
      */
     void setLinkInactive();
 
+    /** @brief Sends a message and adds it to the messages to send list
+     * @param msg the message to send
+     */
+    void sendNewMessage(const std::string& msg);
+
     /** @brief Thread to send messages in send queue
      */
     void sendThreaded();

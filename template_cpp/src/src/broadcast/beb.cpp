@@ -29,7 +29,7 @@ void BestEffortBroadcast::broadcastMessage(const std::string& msg) {
     
     for(auto& link: links){
         if (link != nullptr) {
-            link->addMessage(msg);
+            link->sendNewMessage(msg); // default is addMessage
         }
     }
 }

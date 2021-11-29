@@ -59,6 +59,22 @@ void Perfectlink::setLinkInactive() {
     }
 }
 
+void Perfectlink::sendNewMessage(const std::string& msg) {
+
+    char packet[MAX_LENGTH] = {0};
+    int ack = 0;
+    sprintf(packet, "%-1d%03d%03d%-s%c", ack, this_process_id, target_id, msg.c_str(), '\0');
+
+    std::lock_guard<std::mutex> lock(messages_to_send_mutex);
+    if (link_active & (this->sender != nullptr)) {
+
+        std::cout << "sending message " << packet << " to " << std::to_string(target_id) << std::endl;
+        this->sender->sendMessage(packet);
+    }
+    
+    messages_to_send.push_back(packet);
+}
+
 void Perfectlink::sendThreaded() {
 
     while(true) {
