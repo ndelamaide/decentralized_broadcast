@@ -67,8 +67,7 @@ void Perfectlink::sendNewMessage(const std::string& msg) {
 
     std::lock_guard<std::mutex> lock(messages_to_send_mutex);
     if (link_active & (this->sender != nullptr)) {
-
-        std::cout << "sending message " << packet << " to " << std::to_string(target_id) << std::endl;
+        
         this->sender->sendMessage(packet);
     }
     

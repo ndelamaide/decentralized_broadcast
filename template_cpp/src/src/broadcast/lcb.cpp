@@ -17,10 +17,11 @@ LocalizedCausalBroadcast::LocalizedCausalBroadcast(Receiver* receiver, UniformRe
         rank = this->receiver->getProcessId();
         receiver_mutex.unlock();
 
-        // TODO @ REMOVE
         for (int i=1; i <= static_cast<int> (NUM_PROCESSES); ++i) {
             VC[i] = 0;
         }
+
+        deliver_pending_thread = std::thread(&LocalizedCausalBroadcast::deliverPending, this);
     }
 
 void LocalizedCausalBroadcast::startBroadcast() {
@@ -28,32 +29,34 @@ void LocalizedCausalBroadcast::startBroadcast() {
     this->setBroadcastActive();
     this->urb->setBroadcastActive();
 
-    std::string W;
-
-    for (auto& other_rank: dependencies) {
-
-        char process_id[4];
-        sprintf(process_id, "%03d", other_rank);
-
-        W += "v" + std::string (process_id) + std::to_string(VC[other_rank]);
-    }
-
     char this_process_id[4];
     sprintf(this_process_id, "%03d", rank);
 
     for (auto& message: messages_to_broadcast) {
+
+        std::string W;
+
+        for (auto& other_rank: dependencies) {
+
+            char process_id[4];
+            sprintf(process_id, "%03d", other_rank);
+
+            W += "v" + std::string (process_id) + std::to_string(VC[other_rank]);
+        }
         
         std::string W_to_send(W);
 
-        W_to_send += "v" + std::string (this_process_id) + std::to_string(lsn);
+        W_to_send += "v" + std::string(this_process_id) + std::to_string(lsn);
         lsn += 1;
 
         this->addSentMessageLog(message);
 
         std::string message_to_send = message + W_to_send;
 
+        std::cout << "broadcasting " << message_to_send << std::endl;
         this->urb->broadcastMessage(message_to_send, bool (true));
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1)); // FOR TESTING ONLY
     }
 
     messages_to_broadcast.clear();
@@ -85,57 +88,61 @@ void LocalizedCausalBroadcast::broadcastMessage(const std::string& msg) {
 void LocalizedCausalBroadcast::deliver(const std::string& msg) {
     //msg should be process_id - message - W
 
-    pending_mutex.lock();
+    std::lock_guard<std::mutex> lock(pending_mutex);
     if (!(std::find(pending.begin(), pending.end(), msg) != pending.end())) {
         
         pending.push_back(msg);
 
+        std::lock_guard<std::mutex> lock(message_VC_mutex);
+
         std::string vc_string = msg.substr(msg.find('v'), msg.size());
         message_VC_pairs[msg] = this->constructVC(vc_string);
     }
+}
+
+void LocalizedCausalBroadcast::deliverPending() {
 
     std::list<std::string> pair_to_delete;
 
-    bool exists(true);
+    while (true) {
+        if (active) {
 
-    while (exists) {
+            std::lock_guard<std::mutex> lock(message_VC_mutex);
 
-        bool found_inferior(false);
+            for (auto& message_VC: message_VC_pairs) {
 
-        for (auto& message_VC: message_VC_pairs) {
+                if (isInferior(message_VC.second)) {
 
-            if (isInferior(message_VC.second)) {
-                
-                found_inferior = true;
+                    std::string message = message_VC.first;
 
-                std::string message = message_VC.first;
+                    pending_mutex.lock();
+                    pending.remove(message);
+                    pending_mutex.unlock();
 
-                pending.remove(message);
-                pair_to_delete.push_back(message);
+                    pair_to_delete.push_back(message);
 
-                int other_rank = std::stoi(message.substr(0, 3));
+                    int other_rank = std::stoi(message.substr(0, 3));
 
-                VC[other_rank] += 1;
+                    VC[other_rank] += 1;
+                    std::cout << "New VC of id " << std::to_string(other_rank) << " is " << VC[other_rank] << std::endl;
 
-                if (log) {
+                    if (log) {
 
-                    std::string message_to_deliver = this->toMessageFormat(message.substr(0, message.find('v')));
+                        std::string message_to_deliver = this->toMessageFormat(message.substr(0, message.find('v')));
 
-                    this->addDeliveredMessageLog(message_to_deliver);
+                        this->addDeliveredMessageLog(message_to_deliver);
+                    }
                 }
             }
-        }
 
-        //Remove messages delivered from message_VC_pair
-        for (auto& message: pair_to_delete) {
-            message_VC_pairs.erase(message);
-        }
+            //Remove messages delivered from message_VC_pair
+            for (auto& message: pair_to_delete) {
+                message_VC_pairs.erase(message);
+            }
 
-        exists = found_inferior;
+            pair_to_delete.clear();
+        }
     }
-
-    pending_mutex.unlock();
-
 }
 
 std::string LocalizedCausalBroadcast::toMessageFormat(const std::string msg) {

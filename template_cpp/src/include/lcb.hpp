@@ -36,6 +36,11 @@ class LocalizedCausalBroadcast : public Broadcast {
      */
     virtual void deliver(const std::string& msg) override;
 
+    /** @brief Delivers pending messages if can deliver them
+     * i.e W' <= VC
+     */
+    virtual void deliverPending();
+
     private:
 
     /** @brief Changes a pending message to the format of
@@ -66,13 +71,16 @@ class LocalizedCausalBroadcast : public Broadcast {
 
     std::list<int> dependencies;
 
-    std::mutex VC_mutex;
     std::map<int, int> VC; // Vector Clock
 
     std::map<std::string, std::map<int, int> > message_VC_pairs;
 
-    std::mutex pending_mutex;
     std::list<std::string> pending;
+
+    std::thread deliver_pending_thread;
+
+    std::mutex pending_mutex;
+    std::mutex message_VC_mutex;
 };
 
 #endif

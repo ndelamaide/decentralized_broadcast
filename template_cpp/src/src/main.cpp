@@ -118,6 +118,8 @@ std::list<std::string> deconcatMessages(std::list<std::string> log) {
 
 void writeOutput() {
 
+  std::cout << "writing output \n"; 
+
   std::stringstream output;
 
   if (this_process != nullptr){
@@ -138,11 +140,11 @@ void writeOutput() {
     
     for (auto& message: log) {
 
+      std::cout << "logging " << message << std::endl;
+
       char event = message[0];
 
       if (event == 'd') {
-
-        //std::cout << "writing " << message << std::endl;
 
         int msg_process_id = stoi(message.substr(1, 3));
         int msg_target_id = stoi(message.substr(4, 3));

@@ -44,7 +44,6 @@ void BestEffortBroadcast::deliver(const std::string& msg) {
             this->addDeliveredMessageLog(msg);  
         }
 
-        std::lock_guard<std::mutex> lock(upper_layer_mutex);
         if (upper_layer != nullptr) {
             upper_layer->deliver(msg);
         }
