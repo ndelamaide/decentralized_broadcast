@@ -23,6 +23,10 @@ class LocalizedCausalBroadcast : public Broadcast {
      */
     LocalizedCausalBroadcast(Receiver* receiver, UniformReliableBroadcast* urb, unsigned long NUM_PROCESSES, std::list<int> dependencies, bool log = false);
 
+    /** @brief Activates the broadcast
+     */
+    virtual void setBroadcastActive() override;
+
     /** @brief Starts broadcasting. Transmits the messages to broadcast
      *  to the perfect links.
      */

@@ -133,29 +133,13 @@ std::list<std::string> deconcatMessages(std::list<std::string> log) {
 
 void writeOutput() {
 
-  std::cout << "writing output \n"; 
-
   std::stringstream output;
 
   if (this_process != nullptr){
 
-    std::list<std::string> log;
-
-    if (broadcast != nullptr) {
-
-      if (broadcast->getConcat()) {
-
-        log = deconcatMessages(this_process->getMessageLog());
-
-      } else {
-
-        log = this_process->getMessageLog();
-      }
-    }
+    std::list<std::string> log = deconcatMessages(this_process->getMessageLog());
     
     for (auto& message: log) {
-
-      std::cout << "logging " << message << std::endl;
 
       char event = message[0];
 
@@ -317,19 +301,44 @@ int main(int argc, char **argv) {
   }
   readFile.close();
 
-  // Create boradcast
+  // Create broadcast
   broadcast = new LocalizedCausalBroadcast(this_process, urb, hosts.size(), localized_ids, bool (true));
 
-  unsigned long num_messages_to_send = static_cast<unsigned long>(std::stoi(m));
-
-  for(unsigned int seq_num = 1; seq_num <= num_messages_to_send; ++seq_num){
-    broadcast->addMessage(std::to_string(seq_num));
-  }
+  broadcast->setBroadcastActive();
   
   std::cout << "Broadcasting and delivering messages...\n\n";
 
-  //broadcast->concatMessages();
-  broadcast->startBroadcast();
+  unsigned long num_messages_to_send = static_cast<unsigned long>(std::stoi(m));
+
+  unsigned long groupy_by = 15; //group messages by 15
+
+  std::string messages_concat = "";
+
+  unsigned long msg_num(0); // nbr of messages concatenated
+
+  for(unsigned int seq_num = 1; seq_num <= num_messages_to_send; ++seq_num){
+
+    if (msg_num < groupy_by) {
+
+      messages_concat += std::to_string(seq_num) + 's';
+      msg_num += 1;
+    }
+
+    if (msg_num == groupy_by) {
+
+      broadcast->broadcastMessage(std::to_string(msg_num) + messages_concat.substr(0, messages_concat.size() - 1)); //don't send last s
+      msg_num = 0;
+      messages_concat = "";
+    }
+  }
+
+  char str_msg_num[3];
+  sprintf(str_msg_num, "%02lu", msg_num);
+
+  // the number of message to send wasn't a multiple of 15 -> send last messages concatenated
+  if (messages_concat != "") {
+    broadcast->broadcastMessage(std::string (str_msg_num) + messages_concat.substr(0, messages_concat.size() - 1));
+  }
 
   // After a process finishes broadcasting,
   // it waits forever for the delivery of messages.

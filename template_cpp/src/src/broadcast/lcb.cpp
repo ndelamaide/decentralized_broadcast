@@ -24,6 +24,12 @@ LocalizedCausalBroadcast::LocalizedCausalBroadcast(Receiver* receiver, UniformRe
         deliver_pending_thread = std::thread(&LocalizedCausalBroadcast::deliverPending, this);
     }
 
+
+void LocalizedCausalBroadcast::setBroadcastActive() {
+    this->active = true;
+    this->urb->setBroadcastActive();
+}
+
 void LocalizedCausalBroadcast::startBroadcast() {
 
     this->setBroadcastActive();
@@ -53,11 +59,9 @@ void LocalizedCausalBroadcast::startBroadcast() {
 
         std::string message_to_send = message + W_to_send;
 
-        std::cout << "lcb broadcasting " << message_to_send << std::endl;
-
         this->urb->broadcastMessage(message_to_send, bool (true));
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1)); // FOR TESTING ONLY
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1)); // FOR TESTING ONLY
     }
 
     messages_to_broadcast.clear();
@@ -81,9 +85,15 @@ void LocalizedCausalBroadcast::broadcastMessage(const std::string& msg) {
     W += 'v' + std::string (this_process_id) + std::to_string(lsn);
     lsn += 1;
 
+    this->addSentMessageLog(msg);
+
     std::string message_to_send = msg + W;
 
+    std::cout << "lcb broadcasting " << message_to_send << std::endl;
+
     this->urb->broadcastMessage(message_to_send);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 
 void LocalizedCausalBroadcast::deliver(const std::string& msg) {
