@@ -88,38 +88,31 @@ void LocalizedCausalBroadcast::broadcastMessage(const std::string& msg) {
 void LocalizedCausalBroadcast::deliver(const std::string& msg) {
     //msg should be process_id - message - W
 
-    std::lock_guard<std::mutex> lock(pending_mutex);
-    if (!(std::find(pending.begin(), pending.end(), msg) != pending.end())) {
-        
-        pending.push_back(msg);
+    std::lock_guard<std::mutex> lock(pairs_mutex);
 
-        std::lock_guard<std::mutex> lock(message_VC_mutex);
+    VectorClock msg_vc = pairs[msg];
+
+    if (!msg_vc.empty()) {
 
         std::string vc_string = msg.substr(msg.find('v'), msg.size());
-        message_VC_pairs[msg] = this->constructVC(vc_string);
+        pairs[msg] = this->constructVC(vc_string);
     }
 }
 
 void LocalizedCausalBroadcast::deliverPending() {
 
-    std::list<std::string> pair_to_delete;
-
     while (true) {
         if (active) {
 
-            std::lock_guard<std::mutex> lock(message_VC_mutex);
+            std::lock_guard<std::mutex> lock(pairs_mutex);
 
-            for (auto& message_VC: message_VC_pairs) {
+            std::map<std::string, VectorClock >::iterator it = pairs.begin();
 
-                if (isInferior(message_VC.second)) {
+            while (it != pairs.end()) {
 
-                    std::string message = message_VC.first;
+                if (isInferior(it->second)) {
 
-                    pending_mutex.lock();
-                    pending.remove(message);
-                    pending_mutex.unlock();
-
-                    pair_to_delete.push_back(message);
+                    std::string message = it->first;
 
                     int other_rank = std::stoi(message.substr(0, 3));
 
@@ -131,15 +124,14 @@ void LocalizedCausalBroadcast::deliverPending() {
 
                         this->addDeliveredMessageLog(message_to_deliver);
                     }
+
+                    it = pairs.erase(it); // points to next element in map
+
+                } else {
+
+                    ++it;
                 }
             }
-
-            //Remove messages delivered from message_VC_pair
-            for (auto& message: pair_to_delete) {
-                message_VC_pairs.erase(message);
-            }
-
-            pair_to_delete.clear();
         }
     }
 }

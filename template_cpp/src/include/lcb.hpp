@@ -75,14 +75,11 @@ class LocalizedCausalBroadcast : public Broadcast {
 
     VectorClock VC; // Vector Clock
 
-    std::map<std::string, VectorClock > message_VC_pairs;
-
-    std::list<std::string> pending;
+    std::map<std::string, VectorClock > pairs; //message Vector clock pairs
 
     std::thread deliver_pending_thread;
 
-    std::mutex pending_mutex;
-    std::mutex message_VC_mutex;
+    std::mutex pairs_mutex;
 };
 
 #endif
