@@ -157,9 +157,9 @@ std::string LocalizedCausalBroadcast::toMessageFormat(const std::string msg) {
     return formated;
 }
 
-std::map<int, int> LocalizedCausalBroadcast::constructVC(const std::string vc_string) {
+VectorClock LocalizedCausalBroadcast::constructVC(const std::string vc_string) {
 
-    std::map<int, int> W;
+    VectorClock W;
 
     unsigned long idx = vc_string.find('v');
 
@@ -186,7 +186,7 @@ std::map<int, int> LocalizedCausalBroadcast::constructVC(const std::string vc_st
 }
 
 
-bool LocalizedCausalBroadcast::isInferior(const std::map<int, int>& W){
+bool LocalizedCausalBroadcast::isInferior(const VectorClock& W){
 
     for (auto& elem: W) {
 

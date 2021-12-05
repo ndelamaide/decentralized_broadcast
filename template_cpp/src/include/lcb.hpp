@@ -7,6 +7,8 @@
 #include <map>
 #include <list>
 
+typedef std::map<int, int> VectorClock;
+
 /** @brief Implements Localized Causal Broadcast */
 class LocalizedCausalBroadcast : public Broadcast {
 
@@ -55,13 +57,13 @@ class LocalizedCausalBroadcast : public Broadcast {
      * @return the Vector Clock or empty if the VC doesn't 
      * satistfy W' < V from the algo 3.15 of the book
      */
-    std::map<int, int> constructVC(const std::string vc_string);
+    VectorClock constructVC(const std::string vc_string);
 
     /** @brief Checks if W is inferior to the Vc of this process
      * @param W the vector clock to compare
      * @return True if W <= VC
      */
-    bool isInferior(const std::map<int, int>& W);
+    bool isInferior(const VectorClock& W);
 
 
     UniformReliableBroadcast* urb;
@@ -71,9 +73,9 @@ class LocalizedCausalBroadcast : public Broadcast {
 
     std::list<int> dependencies;
 
-    std::map<int, int> VC; // Vector Clock
+    VectorClock VC; // Vector Clock
 
-    std::map<std::string, std::map<int, int> > message_VC_pairs;
+    std::map<std::string, VectorClock > message_VC_pairs;
 
     std::list<std::string> pending;
 
