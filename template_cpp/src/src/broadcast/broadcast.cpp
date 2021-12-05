@@ -1,6 +1,6 @@
 #include "broadcast.hpp"
 
-#define MAX_LENGTH 110
+#define MAX_LENGTH 512
 
 Broadcast::Broadcast(Receiver* receiver, bool log)
     :receiver(receiver), upper_layer(nullptr), log(log)

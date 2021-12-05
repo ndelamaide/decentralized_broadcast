@@ -36,6 +36,8 @@ std::string outputPath;
 Receiver* this_process = nullptr;
 std::vector<Sender*> senders;
 std::vector<Perfectlink*> links;
+BestEffortBroadcast* beb = nullptr;
+UniformReliableBroadcast* urb = nullptr;
 Broadcast* broadcast = nullptr;
 
 
@@ -63,6 +65,19 @@ void stopProcesses() {
       link->setLinkInactive();
     }
   }
+
+  if (beb != nullptr) {
+    beb->setBroadcastInactive();
+  }
+
+  if (urb != nullptr) {
+    urb->setBroadcastInactive();
+  }
+
+  if (broadcast != nullptr) {
+    broadcast->setBroadcastInactive();
+  }
+
 }
 
 std::list<std::string> deconcatMessages(std::list<std::string> log) {
@@ -245,8 +260,8 @@ int main(int argc, char **argv) {
   std::cout << "Number of hosts " << hosts.size() << std::endl;
 
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
-  BestEffortBroadcast* beb = new BestEffortBroadcast(this_process);
-  UniformReliableBroadcast* urb = new UniformReliableBroadcast(this_process, beb, hosts.size());
+  beb = new BestEffortBroadcast(this_process);
+  urb = new UniformReliableBroadcast(this_process, beb, hosts.size());
 
   // Initialize perfect links
   for (auto& host : hosts) {

@@ -53,7 +53,8 @@ void LocalizedCausalBroadcast::startBroadcast() {
 
         std::string message_to_send = message + W_to_send;
 
-        std::cout << "broadcasting " << message_to_send << std::endl;
+        std::cout << "lcb broadcasting " << message_to_send << std::endl;
+
         this->urb->broadcastMessage(message_to_send, bool (true));
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1)); // FOR TESTING ONLY
@@ -92,7 +93,7 @@ void LocalizedCausalBroadcast::deliver(const std::string& msg) {
 
     VectorClock msg_vc = pairs[msg];
 
-    if (!msg_vc.empty()) {
+    if (msg_vc.empty()) {
 
         std::string vc_string = msg.substr(msg.find('v'), msg.size());
         pairs[msg] = this->constructVC(vc_string);
