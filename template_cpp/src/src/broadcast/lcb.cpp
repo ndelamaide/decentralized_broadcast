@@ -124,7 +124,6 @@ void LocalizedCausalBroadcast::deliverPending() {
                     int other_rank = std::stoi(message.substr(0, 3));
 
                     VC[other_rank] += 1;
-                    std::cout << "New VC of id " << std::to_string(other_rank) << " is " << VC[other_rank] << std::endl;
 
                     if (log) {
 

@@ -5,6 +5,7 @@
 #include "beb.hpp"
 
 #include <map>
+#include <unordered_map>
 #include <list>
 #include <string>
 #include <set>
@@ -75,6 +76,8 @@ class UniformReliableBroadcast : public Broadcast {
 
     std::list<std::string> pending;
     std::multimap<std::string, std::string> ack;
+
+    std::unordered_map<std::string, unsigned int> delivered;
 
     std::thread deliver_pending_thread;
 

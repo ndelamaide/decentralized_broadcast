@@ -134,9 +134,11 @@ void UniformReliableBroadcast::deliverPending() {
             std::lock_guard<std::mutex> lock(pending_mutex);
             for (auto& msg_pending: pending) {
 
-                if (canDeliver(msg_pending) & (!messages_delivered.contains(msg_pending))) {
+                unsigned int has_delivered = delivered[msg_pending];
+
+                if (canDeliver(msg_pending) & (has_delivered == 0)) {
             
-                    messages_delivered.push_back(msg_pending);
+                    delivered[msg_pending] = 1;
 
                     if (log) {
                         std::string message_to_deliver = this->toMessageFormat(msg_pending);
