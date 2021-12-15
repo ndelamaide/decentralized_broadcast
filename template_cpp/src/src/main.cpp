@@ -331,8 +331,8 @@ int main(int argc, char **argv) {
     }
   }
 
-  char str_msg_num[3];
-  sprintf(str_msg_num, "%02lu", msg_num);
+  char str_msg_num[4];
+  sprintf(str_msg_num, "%02d", static_cast<int> (msg_num));
 
   // the number of message to send wasn't a multiple of 15 -> send last messages concatenated
   if (messages_concat != "") {
