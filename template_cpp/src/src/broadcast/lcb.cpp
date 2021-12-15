@@ -89,8 +89,6 @@ void LocalizedCausalBroadcast::broadcastMessage(const std::string& msg) {
 
     std::string message_to_send = msg + W;
 
-    std::cout << "lcb broadcasting " << message_to_send << std::endl;
-
     this->urb->broadcastMessage(message_to_send);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));

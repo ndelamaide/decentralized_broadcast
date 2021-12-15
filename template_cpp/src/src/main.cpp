@@ -241,8 +241,6 @@ int main(int argc, char **argv) {
   outputPath = parser.outputPath();
   unsigned long my_id = parser.id();
 
-  std::cout << "Number of hosts " << hosts.size() << std::endl;
-
   this_process = new Receiver(hosts[my_id-1].ip, hosts[my_id-1].port, static_cast<int>(my_id));
   beb = new BestEffortBroadcast(this_process);
   urb = new UniformReliableBroadcast(this_process, beb, hosts.size());
@@ -289,12 +287,10 @@ int main(int argc, char **argv) {
       getline(iss, id, ' ');
 
       if (std::to_string(my_id) == id) {
-        std::cout << "my id " << id << std::endl;
 
         std::string other_id;
 
         while(getline(iss, other_id, ' ')) {
-          std::cout << "other id " << other_id << std::endl;
           localized_ids.push_back(stoi(other_id));
         }
       }
@@ -307,6 +303,9 @@ int main(int argc, char **argv) {
   broadcast->setBroadcastActive();
   
   std::cout << "Broadcasting and delivering messages...\n\n";
+
+  // The messages are concatenated and sent immediately -> no buffer or dependency on
+  // the number of messages to send
 
   unsigned long num_messages_to_send = static_cast<unsigned long>(std::stoi(m));
 
